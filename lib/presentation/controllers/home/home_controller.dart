@@ -148,4 +148,58 @@ class HomeController extends GetxController {
   // Optional: Center text showing total or balance
   String get centerChartText =>
       "Balance\n₹${totalBalance.value.toStringAsFixed(0)}";
+
+  /// Returns a list of daily totals for the last 7 days.
+  /// Each item in the list is a Map containing 'date', 'income', and 'expense'.
+  List<Map<String, dynamic>> getLast7DaysData() {
+    final now = DateTime.now();
+    final List<Map<String, dynamic>> data = [];
+
+    // Loop backwards over the last 7 days (including today)
+    for (int i = 6; i >= 0; i--) {
+      final date = now.subtract(Duration(days: i));
+
+      double dailyIncome = 0;
+      double dailyExpense = 0;
+
+      for (var tx in transactions) {
+        if (tx.date.year == date.year &&
+            tx.date.month == date.month &&
+            tx.date.day == date.day) {
+          if (tx.type == 'income') {
+            dailyIncome += tx.amount;
+          } else if (tx.type == 'expense') {
+            dailyExpense += tx.amount;
+          }
+        }
+      }
+
+      data.add({
+        'date': date,
+        'label': DateFormat('EEE').format(date), // e.g., 'Mon', 'Tue'
+        'income': dailyIncome,
+        'expense': dailyExpense,
+      });
+    }
+
+    return data;
+  }
+
+  Future<void> deleteTransaction(int id) async {
+    try {
+      await _transactionRepository.deleteTransaction(id);
+      await getAllTransactions();
+      Get.snackbar(
+        "Success",
+        "Transaction deleted successfully",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } catch (e) {
+      Get.snackbar(
+        "Error",
+        "Failed to delete transaction",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
 }

@@ -1,74 +1,72 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:test_app/core/extensions/space_ext.dart';
 import 'package:test_app/presentation/controllers/splash/splash_controller.dart';
-import 'package:test_app/presentation/widgets/app_text.dart';
 
 class SplashView extends GetView<SplashController> {
   const SplashView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = context.theme;
+    final isDark = Get.isDarkMode;
+
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: Get.isDarkMode
-                ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
-                : [const Color(0xFF4A90E2), const Color(0xFF007AFF)],
-          ),
-        ),
+      backgroundColor: theme.scaffoldBackgroundColor,
+      body: Center(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Spacer(flex: 3),
-
-            /// App Icon
+            // App Icon with soft shadow (Apple-like App Icon style)
             Container(
-              padding: const EdgeInsets.all(20),
+              width: 120,
+              height: 120,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(
-                  alpha: Get.isDarkMode ? 0.1 : 0.15,
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isDark
+                      ? [const Color(0xFF6C3FEE), const Color(0xFF4B23B5)]
+                      : [const Color(0xFF8B64FF), const Color(0xFF6C3FEE)],
                 ),
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(
+                  28,
+                ), // Apple's continuous curve approximation
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(
+                      0xFF6C3FEE,
+                    ).withValues(alpha: isDark ? 0.4 : 0.3),
+                    blurRadius: 24,
+                    offset: const Offset(0, 12),
+                  ),
+                ],
               ),
-              child: const Icon(
-                Icons.account_balance_wallet,
-                size: 60,
-                color: Colors.white,
+              child: const Center(
+                child: Icon(
+                  Icons.account_balance_wallet_rounded,
+                  size: 56,
+                  color: Colors.white,
+                ),
               ),
             ),
-
-            20.hBox,
-
-            /// App Name
-            const AppText(
+            const SizedBox(height: 32),
+            // Title
+            Text(
               "Budget Tracker",
-              size: 28,
-              weight: FontWeight.bold,
-              color: Colors.white,
-              letterSpacing: 1.2,
+              style: theme.textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.5,
+              ),
             ),
-
-            8.hBox,
-
-            /// Tagline
-            const AppText(
-              "Track your expenses smartly",
-              size: 14,
-              color: Colors.white70,
-            ),
-
-            const Spacer(flex: 4),
-
-            /// Version
-            const Padding(
-              padding: EdgeInsets.only(bottom: 20),
-              child: AppText("Version 1.0.0", size: 14, color: Colors.white70),
+            const SizedBox(height: 12),
+            // Tagline
+            Text(
+              "Track intelligently.",
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                letterSpacing: 0.2,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
         ),

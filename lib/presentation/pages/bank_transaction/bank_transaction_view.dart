@@ -1,9 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:test_app/core/extensions/space_ext.dart';
 import 'package:test_app/presentation/controllers/bank_transaction/bank_transaction_controller.dart';
-import 'package:test_app/presentation/widgets/app_text.dart';
 
 class BankTransactionView extends GetView<BankTransactionController> {
   const BankTransactionView({super.key});
@@ -11,119 +10,220 @@ class BankTransactionView extends GetView<BankTransactionController> {
   @override
   Widget build(BuildContext context) {
     final theme = context.theme;
-    final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
-    final isDark = Get.isDarkMode;
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(
-        title: AppText(
-          "${controller.bank.name} Transactions",
-          size: 22,
-          weight: FontWeight.bold,
+      backgroundColor: theme.scaffoldBackgroundColor,
+      body: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
         ),
-        centerTitle: true,
-        elevation: 0,
-      ),
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (controller.transactions.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.receipt_long_outlined,
-                  size: 80,
-                  color: colorScheme.onSurface.withValues(alpha: 0.4),
-                ),
-                16.hBox,
-                AppText(
-                  "No transactions for this bank",
-                  size: 18,
-                  color: colorScheme.onSurface.withValues(alpha: 0.7),
-                ),
-                8.hBox,
-                AppText(
-                  "Transactions will appear here once added",
-                  size: 14,
-                  color: colorScheme.onSurface.withValues(alpha: 0.5),
-                ),
-              ],
+        slivers: [
+          // Apple-style Large Title Header
+          SliverAppBar(
+            backgroundColor: theme.scaffoldBackgroundColor,
+            expandedHeight: 120.0,
+            floating: false,
+            pinned: true,
+            elevation: 0,
+            scrolledUnderElevation: 0,
+            leading: CupertinoButton(
+              padding: EdgeInsets.zero,
+              onPressed: () => Get.back(),
+              child: Icon(
+                CupertinoIcons.back,
+                color: isDark ? Colors.white : Colors.black,
+              ),
             ),
-          );
-        }
-
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          physics: const BouncingScrollPhysics(),
-          itemCount: controller.transactions.length,
-          itemBuilder: (context, index) {
-            final tx = controller.transactions[index];
-            final bool isIncome = tx.type == 'income';
-
-            final Color typeColor = isIncome ? Colors.green : Colors.red;
-            final Color bgTint = typeColor.withValues(
-              alpha: isDark ? 0.15 : 0.1,
-            );
-
-            return Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              decoration: BoxDecoration(
-                color: theme.cardColor,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+            flexibleSpace: FlexibleSpaceBar(
+              titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
+              title: Text(
+                controller.bank.name,
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
+                  fontSize: 28,
+                ),
               ),
-              child: ListTile(
-                contentPadding: const EdgeInsets.symmetric(
+            ),
+          ),
+
+          // Content
+          SliverToBoxAdapter(
+            child: Obx(() {
+              if (controller.isLoading.value) {
+                return const Padding(
+                  padding: EdgeInsets.only(top: 100),
+                  child: Center(child: CupertinoActivityIndicator(radius: 16)),
+                );
+              }
+
+              if (controller.transactions.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 100),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        Icon(
+                          CupertinoIcons.building_2_fill,
+                          size: 80,
+                          color: Colors.grey.withValues(alpha: 0.4),
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          "No transactions yet",
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          "Transactions matched to this account\nwill appear here.",
+                          style: TextStyle(
+                            color: isDark
+                                ? Colors.white54
+                                : Colors.grey.shade500,
+                            fontSize: 15,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(
                   horizontal: 20,
-                  vertical: 12,
+                  vertical: 8,
                 ),
-                leading: CircleAvatar(
-                  radius: 26,
-                  backgroundColor: bgTint,
-                  child: Icon(
-                    isIncome
-                        ? Icons.arrow_downward_rounded
-                        : Icons.arrow_upward_rounded,
-                    color: typeColor,
-                    size: 28,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "TRANSACTIONS HISTORY",
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.2,
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.5,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: isDark
+                                ? Colors.black.withValues(alpha: 0.1)
+                                : Colors.black.withValues(alpha: 0.02),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        padding: EdgeInsets.zero,
+                        itemCount: controller.transactions.length,
+                        separatorBuilder: (context, index) => Container(
+                          margin: const EdgeInsets.only(left: 72),
+                          height: 0.5,
+                          color: theme.dividerColor,
+                        ),
+                        itemBuilder: (context, index) {
+                          final tx = controller.transactions[index];
+                          final isIncome = tx.type == 'income';
+                          final accentColor = isIncome
+                              ? const Color(0xFF34C759)
+                              : const Color(0xFFFF3B30);
+
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    color: accentColor.withValues(
+                                      alpha: isDark ? 0.2 : 0.1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  child: Icon(
+                                    isIncome
+                                        ? CupertinoIcons.arrow_down_right
+                                        : CupertinoIcons.arrow_up_right,
+                                    color: accentColor,
+                                    size: 22,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        tx.category,
+                                        style: TextStyle(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.w600,
+                                          color: isDark
+                                              ? Colors.white
+                                              : Colors.black,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        DateFormat(
+                                          'MMM dd, yyyy',
+                                        ).format(tx.date),
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w400,
+                                          color: isDark
+                                              ? Colors.white54
+                                              : Colors.grey.shade600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Text(
+                                  "${isIncome ? '+' : '-'}₹${tx.amount.toStringAsFixed(0)}",
+                                  style: TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w700,
+                                    color: accentColor,
+                                    letterSpacing: -0.3,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 80),
+                  ],
                 ),
-                title: AppText(
-                  tx.category,
-                  size: 17,
-                  weight: FontWeight.w600,
-                  color: textTheme.bodyLarge?.color,
-                ),
-                subtitle: Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: AppText(
-                    DateFormat('dd MMM yyyy').format(tx.date),
-                    size: 14,
-                    color: colorScheme.onSurface.withValues(alpha: 0.7),
-                  ),
-                ),
-                trailing: AppText(
-                  "${isIncome ? '+' : '-'} ₹${tx.amount.toStringAsFixed(0)}",
-                  size: 18,
-                  weight: FontWeight.bold,
-                  color: typeColor,
-                ),
-              ),
-            );
-          },
-        );
-      }),
+              );
+            }),
+          ),
+        ],
+      ),
     );
   }
 }

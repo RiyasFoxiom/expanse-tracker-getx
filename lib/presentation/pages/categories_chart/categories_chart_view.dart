@@ -1,33 +1,41 @@
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:test_app/core/extensions/space_ext.dart';
 import 'package:test_app/presentation/controllers/categories_chart/categories_chart_controller.dart';
-import 'package:test_app/presentation/widgets/app_text.dart';
 
 class CategoriesChartView extends GetView<CategoriesChartController> {
   const CategoriesChartView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = context.theme;
+
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const AppText(
-          "Category Breakdown",
-          size: 22,
-          weight: FontWeight.bold,
+        title: Text(
+          "Charts",
+          style: theme.textTheme.headlineMedium?.copyWith(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.5,
+          ),
         ),
         centerTitle: true,
         elevation: 0,
-        scrolledUnderElevation: 0,
+        backgroundColor: Colors.transparent,
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: CupertinoActivityIndicator(radius: 16));
         }
 
         return SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
           child: Column(
             children: [
               // Income Chart
@@ -37,10 +45,10 @@ class CategoriesChartView extends GetView<CategoriesChartController> {
                 total: controller.totalIncome.value,
                 sections: controller.incomePieSections,
                 legendEntries: controller.incomeCategoryTotals.entries,
-                noDataText: "No income this month",
+                noDataText: "No recorded income",
                 isIncome: true,
               ),
-              40.hBox,
+              const SizedBox(height: 32),
 
               // Expense Chart
               _buildChartCard(
@@ -49,9 +57,10 @@ class CategoriesChartView extends GetView<CategoriesChartController> {
                 total: controller.totalExpense.value,
                 sections: controller.expensePieSections,
                 legendEntries: controller.expenseCategoryTotals.entries,
-                noDataText: "No expenses this month",
+                noDataText: "No recorded expenses",
                 isIncome: false,
               ),
+              const SizedBox(height: 100),
             ],
           ),
         );
@@ -69,62 +78,76 @@ class CategoriesChartView extends GetView<CategoriesChartController> {
     required bool isIncome,
   }) {
     final theme = context.theme;
-    final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
     final isDark = Get.isDarkMode;
 
     final hasData = total > 0;
-    final cardColor = theme.cardColor;
-    final primaryAccent = isIncome ? Colors.green : Colors.red;
+    final accentColor = isIncome
+        ? const Color(0xFF34C759)
+        : const Color(0xFFFF3B30);
 
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
-        color: cardColor,
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.1),
-            blurRadius: 30,
-            offset: const Offset(0, 12),
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.15)
+                : Colors.black.withValues(alpha: 0.04),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
       child: Column(
         children: [
-          AppText(
+          Text(
             title,
-            size: 21,
-            weight: FontWeight.bold,
-            color: textTheme.titleLarge?.color,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.3,
+            ),
           ),
-          32.hBox,
+          const SizedBox(height: 32),
 
           SizedBox(
-            height: 280,
+            height: 240,
             child: hasData
                 ? PieChart(
                     PieChartData(
-                      sectionsSpace: 6,
-                      centerSpaceRadius: 90,
-                      sections: sections,
                       pieTouchData: PieTouchData(enabled: false),
+                      borderData: FlBorderData(show: false),
+                      sectionsSpace: 4,
+                      centerSpaceRadius: 85,
+                      sections: sections,
                     ),
+                    swapAnimationDuration: const Duration(milliseconds: 600),
+                    swapAnimationCurve: Curves.easeOutCubic,
                   )
                 : Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          isIncome ? Icons.trending_up : Icons.trending_down,
+                          isIncome
+                              ? CupertinoIcons.chart_bar_fill
+                              : CupertinoIcons.chart_pie_fill,
                           size: 60,
-                          color: colorScheme.onSurface.withValues(alpha: 0.4),
+                          color: Colors.grey.withValues(alpha: 0.3),
                         ),
-                        16.hBox,
-                        AppText(
+                        const SizedBox(height: 16),
+                        Text(
                           noDataText,
-                          size: 17,
-                          color: colorScheme.onSurface.withValues(alpha: 0.6),
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: isDark
+                                ? Colors.white54
+                                : Colors.grey.shade500,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ],
                     ),
@@ -132,59 +155,79 @@ class CategoriesChartView extends GetView<CategoriesChartController> {
           ),
 
           if (hasData) ...[
-            32.hBox,
-            AppText(
-              "₹${total.toStringAsFixed(0)}",
-              size: 34,
-              weight: FontWeight.bold,
-              color: primaryAccent,
+            const SizedBox(height: 40),
+            Text(
+              "Total",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.white54 : Colors.grey.shade500,
+                letterSpacing: 0.5,
+              ),
             ),
-            32.hBox,
+            const SizedBox(height: 8),
+            Text(
+              "₹${total.toStringAsFixed(0)}",
+              style: theme.textTheme.displayLarge?.copyWith(
+                fontSize: 34,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -1.0,
+                color: accentColor,
+              ),
+            ),
+            const SizedBox(height: 32),
+            Container(height: 1, color: theme.dividerColor),
+            const SizedBox(height: 24),
           ],
 
           // Legend
           if (hasData)
-            Wrap(
-              spacing: 24,
-              runSpacing: 16,
-              alignment: WrapAlignment.center,
-              children: legendEntries.map((entry) {
-                final categoryColor = controller.getColor(entry.key);
-                return Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 20,
-                      height: 20,
-                      decoration: BoxDecoration(
-                        color: categoryColor,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: isDark ? Colors.white24 : Colors.black12,
-                          width: 1,
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Wrap(
+                spacing: 24,
+                runSpacing: 20,
+                children: legendEntries.map((entry) {
+                  final categoryColor = controller.getColor(entry.key);
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 14,
+                        height: 14,
+                        decoration: BoxDecoration(
+                          color: categoryColor,
+                          shape: BoxShape.circle,
                         ),
                       ),
-                    ),
-                    12.wBox,
-                    AppText(
-                      entry.key,
-                      size: 16,
-                      weight: FontWeight.w600,
-                      color: textTheme.bodyLarge?.color,
-                    ),
-                    12.wBox,
-                    AppText(
-                      "₹${entry.value.toStringAsFixed(0)}",
-                      size: 16,
-                      weight: FontWeight.bold,
-                      color: categoryColor,
-                    ),
-                  ],
-                );
-              }).toList(),
+                      const SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            entry.key,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: isDark ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            "₹${entry.value.toStringAsFixed(0)}",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: categoryColor.withValues(alpha: 0.9),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                }).toList(),
+              ),
             ),
-
-          if (!hasData) 40.hBox,
         ],
       ),
     );

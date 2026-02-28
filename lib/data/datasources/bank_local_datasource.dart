@@ -47,4 +47,78 @@ class BankLocalDataSource {
     final db = await _dbHelper.database;
     await db.delete('banks', where: 'id = ?', whereArgs: [id]);
   }
+
+  Future<void> transferFunds(
+    int fromBankId,
+    int toBankId,
+    double amount,
+  ) async {
+    final db = await _dbHelper.database;
+    await db.transaction((txn) async {
+      // Fetch source bank
+      final fromMapped = await txn.query(
+        'banks',
+        where: 'id = ?',
+        whereArgs: [fromBankId],
+      );
+      if (fromMapped.isEmpty) throw Exception('Source bank not found');
+      double fromBalance = fromMapped.first['balance'] as double;
+      if (fromBalance < amount) throw Exception('Insufficient balance');
+
+      // Update source bank balance
+      await txn.update(
+        'banks',
+        {
+          'balance': fromBalance - amount,
+          'updated_at': DateTime.now().toIso8601String(),
+        },
+        where: 'id = ?',
+        whereArgs: [fromBankId],
+      );
+
+      // Fetch destination bank
+      final toMapped = await txn.query(
+        'banks',
+        where: 'id = ?',
+        whereArgs: [toBankId],
+      );
+      if (toMapped.isEmpty) throw Exception('Destination bank not found');
+      double toBalance = toMapped.first['balance'] as double;
+
+      // Update destination bank balance
+      await txn.update(
+        'banks',
+        {
+          'balance': toBalance + amount,
+          'updated_at': DateTime.now().toIso8601String(),
+        },
+        where: 'id = ?',
+        whereArgs: [toBankId],
+      );
+
+      final String now = DateTime.now().toIso8601String();
+
+      // Insert transfer out transaction for source bank
+      await txn.insert('transactions', {
+        'amount': amount,
+        'category': 'Transfer',
+        'type': 'expense',
+        'date': now,
+        'notes': 'Transfer Out',
+        'created_at': now,
+        'bank_id': fromBankId,
+      });
+
+      // Insert transfer in transaction for destination bank
+      await txn.insert('transactions', {
+        'amount': amount,
+        'category': 'Transfer',
+        'type': 'income',
+        'date': now,
+        'notes': 'Transfer In',
+        'created_at': now,
+        'bank_id': toBankId,
+      });
+    });
+  }
 }

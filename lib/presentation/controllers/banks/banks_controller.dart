@@ -28,4 +28,27 @@ class BanksController extends GetxController {
       Get.snackbar('Error', 'Cannot delete bank with transactions');
     }
   }
+
+  Future<void> transferFunds(
+    int fromBankId,
+    int toBankId,
+    double amount,
+  ) async {
+    if (fromBankId == toBankId) {
+      Get.snackbar('Error', 'Cannot transfer to the same bank');
+      return;
+    }
+    if (amount <= 0) {
+      Get.snackbar('Error', 'Amount must be greater than zero');
+      return;
+    }
+    try {
+      await repo.transferFunds(fromBankId, toBankId, amount);
+      await loadBanks();
+      Get.back(); // Close the modal
+      Get.snackbar('Success', 'Funds transferred successfully');
+    } catch (e) {
+      Get.snackbar('Error', e.toString().replaceAll('Exception: ', ''));
+    }
+  }
 }

@@ -1,6 +1,6 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:test_app/presentation/controllers/landing/landing_controller.dart';
 import 'package:test_app/presentation/pages/banks/banks_view.dart';
 import 'package:test_app/presentation/pages/category/categories_view.dart';
@@ -24,62 +24,138 @@ class LandingView extends StatelessWidget {
       initState: (state) {
         state.controller?.setIndex(pageIndex);
       },
-      builder: (controller) => Obx(
-        () => Scaffold(
-          body: pages[controller.currentIndex.value],
-          bottomNavigationBar: _buildGNav(context, controller),
+      builder: (controller) => Scaffold(
+        extendBody: true,
+        body: Obx(
+          () => AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeInCubic,
+            child: KeyedSubtree(
+              key: ValueKey(controller.currentIndex.value),
+              child: pages[controller.currentIndex.value],
+            ),
+          ),
         ),
+        bottomNavigationBar: const _DynamicBottomNav(),
       ),
     );
   }
+}
 
-  Widget _buildGNav(BuildContext context, LandingController controller) {
+class _DynamicBottomNav extends StatelessWidget {
+  const _DynamicBottomNav();
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = Get.find<LandingController>();
     final theme = context.theme;
-    final colorScheme = theme.colorScheme;
     final isDark = Get.isDarkMode;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.scaffoldBackgroundColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          child: GNav(
-            selectedIndex: controller.currentIndex.value,
-            onTabChange: controller.setIndex,
-            gap: 8,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            tabBorderRadius: 16,
-            curve: Curves.easeInOut,
-            duration: const Duration(milliseconds: 400),
-            color: colorScheme.onSurface.withValues(alpha: 0.6),
-            activeColor: colorScheme.primary,
-            tabBackgroundColor: colorScheme.primary.withValues(alpha: .1),
-            rippleColor: colorScheme.primary.withValues(alpha: 0.15),
-            hoverColor: colorScheme.primary.withValues(alpha: 0.08),
-            tabBorder: Border.all(
-              color: isDark ? Colors.white10 : Colors.black12,
-              width: 1,
+    final items = [
+      {'icon': Icons.home_rounded},
+      {'icon': Icons.grid_view_rounded},
+      {'icon': Icons.account_balance_wallet_rounded},
+      {'icon': Icons.person_rounded},
+    ];
+
+    return Obx(() {
+      final currentIndex = controller.currentIndex.value;
+
+      return Container(
+        margin: const EdgeInsets.only(left: 28, right: 28, bottom: 32),
+        height: 72,
+        decoration: BoxDecoration(
+          color: isDark
+              ? const Color(0xFF1E293B).withValues(alpha: 0.8)
+              : Colors.white.withValues(alpha: 0.8),
+          borderRadius: BorderRadius.circular(36),
+          boxShadow: [
+            BoxShadow(
+              color: isDark
+                  ? Colors.black.withValues(alpha: 0.3)
+                  : theme.colorScheme.primary.withValues(alpha: 0.15),
+              blurRadius: 24,
+              offset: const Offset(0, 10),
             ),
-            tabs: const [
-              GButton(icon: Icons.home_outlined, text: 'Home'),
-              GButton(icon: Icons.category_outlined, text: 'Categories'),
-              GButton(icon: Icons.credit_card_outlined, text: 'Banks'),
-              GButton(icon: Icons.person_outline, text: 'Profile'),
-            ],
+          ],
+          border: Border.all(
+            color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white,
+            width: 1.5,
           ),
         ),
-      ),
-    );
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(36),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final tabWidth = constraints.maxWidth / items.length;
+                const bubbleSize = 52.0;
+                final bubbleStartOffset = (tabWidth - bubbleSize) / 2;
+
+                return Stack(
+                  children: [
+                    // ── Animated sliding bubble
+                    AnimatedPositioned(
+                      duration: const Duration(milliseconds: 400),
+                      curve: Curves
+                          .easeOutBack, // Gives that satisfying bounce effect
+                      top: 10, // Center vertically (72 - 52) / 2 = 10
+                      left: tabWidth * currentIndex + bubbleStartOffset,
+                      child: Container(
+                        width: bubbleSize,
+                        height: bubbleSize,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: theme.colorScheme.primary.withValues(
+                                alpha: 0.4,
+                              ),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // ── Icons
+                    Row(
+                      children: List.generate(items.length, (index) {
+                        final isSelected = currentIndex == index;
+                        final icon = items[index]['icon'] as IconData;
+
+                        return SizedBox(
+                          width: tabWidth,
+                          child: GestureDetector(
+                            onTap: () => controller.setIndex(index),
+                            behavior: HitTestBehavior.opaque,
+                            child: AnimatedTheme(
+                              data: theme.copyWith(
+                                iconTheme: IconThemeData(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : (isDark
+                                            ? Colors.white54
+                                            : Colors.black45),
+                                  size: isSelected ? 26 : 24,
+                                ),
+                              ),
+                              child: Center(child: Icon(icon)),
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ),
+      );
+    });
   }
 }

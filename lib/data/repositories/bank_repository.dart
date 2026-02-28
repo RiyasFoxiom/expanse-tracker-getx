@@ -21,4 +21,7 @@ class BankRepository {
     final transactions = await txRepo.getAllTransactions();
     return transactions.any((tx) => tx.bankId == bankId);
   }
+
+  Future<void> transferFunds(int fromBankId, int toBankId, double amount) =>
+      _local.transferFunds(fromBankId, toBankId, amount);
 }

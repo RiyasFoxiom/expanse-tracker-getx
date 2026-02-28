@@ -148,4 +148,22 @@ class ViewAllTransactionController extends GetxController {
     selectedCategory.value = 'all';
     applyFiltersAndSort();
   }
+
+  Future<void> deleteTransaction(int id) async {
+    try {
+      await _repository.deleteTransaction(id);
+      await fetchTransactions(); // Refresh the list
+      Get.snackbar(
+        "Success",
+        "Transaction deleted successfully",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } catch (e) {
+      Get.snackbar(
+        "Error",
+        "Failed to delete transaction",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
 }
