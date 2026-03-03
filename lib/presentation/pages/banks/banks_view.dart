@@ -538,10 +538,15 @@ class BanksView extends GetView<BanksController> {
                       ),
                       const Spacer(),
                       GestureDetector(
-                        onTap: () => Screen.open(
-                          const AddBanksView(),
-                          binding: AddBanksBinding(),
-                        ),
+                        onTap: () {
+                          if (Get.isRegistered<AddBanksController>()) {
+                            Get.find<AddBanksController>().resetForAdd();
+                          }
+                          Screen.open(
+                            const AddBanksView(),
+                            binding: AddBanksBinding(),
+                          );
+                        },
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
@@ -599,10 +604,15 @@ class BanksView extends GetView<BanksController> {
                       _buildQuickAction(
                         icon: Icons.add_card_rounded,
                         label: "Add Bank",
-                        onTap: () => Screen.open(
-                          const AddBanksView(),
-                          binding: AddBanksBinding(),
-                        ),
+                        onTap: () {
+                          if (Get.isRegistered<AddBanksController>()) {
+                            Get.find<AddBanksController>().resetForAdd();
+                          }
+                          Screen.open(
+                            const AddBanksView(),
+                            binding: AddBanksBinding(),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -698,13 +708,17 @@ class BanksView extends GetView<BanksController> {
                                   SlidableAction(
                                     flex: 1,
                                     onPressed: (_) {
-                                      final addCtrl =
-                                          Get.find<AddBanksController>();
-                                      addCtrl.setupForEdit(bank);
                                       Screen.open(
                                         const AddBanksView(),
                                         binding: AddBanksBinding(),
                                       );
+                                      // setupForEdit after push so the controller exists
+                                      if (Get.isRegistered<
+                                        AddBanksController
+                                      >()) {
+                                        Get.find<AddBanksController>()
+                                            .setupForEdit(bank);
+                                      }
                                     },
                                     backgroundColor: const Color(0xFF3B82F6),
                                     foregroundColor: Colors.white,

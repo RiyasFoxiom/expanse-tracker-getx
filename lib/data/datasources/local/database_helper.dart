@@ -66,6 +66,12 @@ class DatabaseHelper {
   ''');
   }
 
+  Future<int> updateBank(Map<String, dynamic> bankRow) async {
+    Database db = await database;
+    int id = bankRow['id'];
+    return await db.update('banks', bankRow, where: 'id = ?', whereArgs: [id]);
+  }
+
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 3) {
       await db.execute('''

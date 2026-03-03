@@ -11,6 +11,16 @@ class BankRepository {
 
   Future<List<BankModel>> getAllBanks() => _local.getAllBanks();
   Future<void> addBank(BankModel bank) => _local.addBank(bank);
+  Future<void> updateBank(BankModel bank) => _local.updateBank(bank);
+
+  Future<void> addOrUpdateBank(BankModel bank) async {
+    if (bank.id == null || bank.id == 0) {
+      await _local.addBank(bank);
+    } else {
+      await _local.updateBank(bank);
+    }
+  }
+
   Future<void> updateBankBalance(int id, double newBalance) =>
       _local.updateBankBalance(id, newBalance);
   Future<BankModel?> getBankById(int id) => _local.getBankById(id);

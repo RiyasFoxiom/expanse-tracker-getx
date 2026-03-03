@@ -209,11 +209,17 @@ class ProfileView extends GetView<ProfileController> {
                   icon: CupertinoIcons.info_circle_fill,
                   iconColor: const Color(0xFF007AFF),
                   title: "App Version",
-                  trailing: Text(
-                    "v2.0.0",
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  trailing: Obx(
+                    () => Text(
+                      controller.appVersion.value.isEmpty
+                          ? '...'
+                          : controller.appVersion.value,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.6,
+                        ),
+                      ),
                     ),
                   ),
                   onTap: () {},

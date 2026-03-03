@@ -19,6 +19,15 @@ class BanksController extends GetxController {
     isLoading.value = false;
   }
 
+  Future<void> updateBank(BankModel bank) async {
+    try {
+      await repo.addOrUpdateBank(bank);
+      await loadBanks();
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to update bank');
+    }
+  }
+
   Future<void> deleteBank(int id) async {
     try {
       await repo.deleteBank(id);

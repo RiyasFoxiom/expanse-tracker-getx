@@ -37,23 +37,34 @@ class AddBanksController extends GetxController {
     isSaving.value = true;
 
     final bank = BankModel(
+      id: isEditing.value ? editingBank.value?.id : null,
       name: name,
       type: selectedType.value,
       cardNumber: formattedCardNumber,
       balance: balance,
+      createdAt: isEditing.value ? editingBank.value?.createdAt : null,
     );
 
     try {
-      await _bankRepo.addBank(bank);
-      Get.back();
-      Get.snackbar('Success', '$name added successfully!');
+      if (isEditing.value) {
+        await _bankRepo.updateBank(bank);
+        Get.back();
+        Get.snackbar('Success', '$name updated successfully!');
+      } else {
+        await _bankRepo.addBank(bank);
+        Get.back();
+        Get.snackbar('Success', '$name added successfully!');
+      }
 
       if (Get.isRegistered<BanksController>()) {
         Get.find<BanksController>().loadBanks();
       }
     } catch (e) {
       debugPrint("error $e");
-      Get.snackbar('Error', 'Failed to save bank');
+      Get.snackbar(
+        'Error',
+        isEditing.value ? 'Failed to update bank' : 'Failed to save bank',
+      );
     } finally {
       isSaving.value = false;
     }
@@ -79,5 +90,14 @@ class AddBanksController extends GetxController {
     final parts = bank.cardNumber.split(' ');
     final last4 = parts.length >= 4 ? parts.last.replaceAll('*', '') : '';
     cardNumberController.text = last4 == '****' ? '' : last4;
+  }
+
+  void resetForAdd() {
+    editingBank.value = null;
+    isEditing.value = false;
+    nameController.clear();
+    cardNumberController.clear();
+    balanceController.clear();
+    selectedType.value = 'savings';
   }
 }
