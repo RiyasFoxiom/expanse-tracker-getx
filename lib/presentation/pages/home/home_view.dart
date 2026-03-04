@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:test_app/core/extensions/space_ext.dart';
 import 'package:test_app/core/helpers/screen_helper.dart';
 import 'package:test_app/data/models/transaction_model.dart';
 import 'package:test_app/presentation/bindings/add_transaction/add_transaction_binding.dart';
@@ -10,6 +11,7 @@ import 'package:test_app/presentation/bindings/view_all_transaction/view_all_tra
 import 'package:test_app/presentation/controllers/home/home_controller.dart';
 import 'package:test_app/presentation/pages/add_transaction/add_transaction_view.dart';
 import 'package:test_app/presentation/pages/view_transaction/view_all_transaction_view.dart';
+import 'package:test_app/presentation/widgets/app_text.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({super.key});
@@ -26,16 +28,17 @@ class HomeView extends GetView<HomeController> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
-        toolbarHeight: 70,
+        toolbarHeight: 50,
+        centerTitle: false,
         title: Padding(
-          padding: const EdgeInsets.only(top: 12.0),
+          padding: const .only(top: 12.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: .start,
             children: [
-              Text(
+              AppText(
                 "Overview",
                 style: theme.textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
+                  fontWeight: .w800,
                   letterSpacing: -0.5,
                 ),
               ),
@@ -44,28 +47,25 @@ class HomeView extends GetView<HomeController> {
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(top: 12.0, right: 16.0),
+            padding: const .only(top: 12.0, right: 16.0),
             child: Obx(
               () => CupertinoButton(
-                padding: EdgeInsets.zero,
+                padding: .zero,
                 onPressed: () => _showMonthYearPicker(context),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
+                  padding: const .symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     color: isDark
                         ? const Color(0xFF283040)
                         : const Color(0xFFF0F1F5),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: .circular(20),
                   ),
                   child: Row(
                     children: [
-                      Text(
+                      AppText(
                         controller.formattedMonth,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
+                          fontWeight: .w600,
                           color: isDark ? Colors.white : Colors.black,
                         ),
                       ),
@@ -84,7 +84,7 @@ class HomeView extends GetView<HomeController> {
         ],
       ),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 100),
+        padding: const .only(bottom: 100),
         child: FloatingActionButton(
           onPressed: () {
             Screen.open(
@@ -100,13 +100,13 @@ class HomeView extends GetView<HomeController> {
           parent: BouncingScrollPhysics(),
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          padding: const .symmetric(horizontal: 20, vertical: 8),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: .start,
             children: [
               // Premium Balance Card
               Obx(() => _buildBalanceCard(context, isDark)),
-              const SizedBox(height: 24),
+              24.hBox,
 
               // Income/Expense Twin Cards
               Row(
@@ -117,21 +117,21 @@ class HomeView extends GetView<HomeController> {
                         context: context,
                         title: "Income",
                         amount:
-                            "₹${controller.totalIncome.value.toStringAsFixed(0)}",
+                            "₹${controller.totalIncome.value.toStringAsFixed(2)}",
                         icon: CupertinoIcons.arrow_down_circle_fill,
                         color: const Color(0xFF34C759),
                         isDark: isDark,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  16.wBox,
                   Expanded(
                     child: Obx(
                       () => _buildPillCard(
                         context: context,
                         title: "Expense",
                         amount:
-                            "₹${controller.totalExpense.value.toStringAsFixed(0)}",
+                            "₹${controller.totalExpense.value.toStringAsFixed(2)}",
                         icon: CupertinoIcons.arrow_up_circle_fill,
                         color: const Color(0xFFFF3B30),
                         isDark: isDark,
@@ -140,43 +140,43 @@ class HomeView extends GetView<HomeController> {
                   ),
                 ],
               ),
-              const SizedBox(height: 36),
+              36.hBox,
 
               // Ring Chart Section
               _buildChartSection(context, isDark),
-              const SizedBox(height: 40),
+              40.hBox,
 
               // Recent Transactions Header
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: .spaceBetween,
                 children: [
-                  Text(
+                  AppText(
                     "Recent Transactions",
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontSize: 22,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: .w700,
                     ),
                   ),
                   CupertinoButton(
-                    padding: EdgeInsets.zero,
+                    padding: .zero,
                     onPressed: () {
                       Screen.open(
                         const ViewAllTransactionView(),
                         binding: ViewAllTransactionBinding(),
                       );
                     },
-                    child: Text(
+                    child: AppText(
                       "See All",
                       style: TextStyle(
                         fontSize: 15,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: .w600,
                         color: theme.colorScheme.primary,
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              16.hBox,
 
               // Transactions List
               Obx(() {
@@ -187,7 +187,7 @@ class HomeView extends GetView<HomeController> {
                 if (controller.transactions.isEmpty) {
                   return Center(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 40),
+                      padding: const .symmetric(vertical: 40),
                       child: Column(
                         children: [
                           Icon(
@@ -195,12 +195,12 @@ class HomeView extends GetView<HomeController> {
                             size: 48,
                             color: Colors.grey.withValues(alpha: 0.4),
                           ),
-                          const SizedBox(height: 12),
-                          Text(
+                          12.hBox,
+                          AppText(
                             "No transactions this month.",
                             style: TextStyle(
                               color: Colors.grey.shade500,
-                              fontWeight: FontWeight.w500,
+                              fontWeight: .w500,
                             ),
                           ),
                         ],
@@ -217,8 +217,8 @@ class HomeView extends GetView<HomeController> {
                       itemCount: controller.transactions.length > 6
                           ? 6
                           : controller.transactions.length,
-                      padding: EdgeInsets.zero,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      padding: .zero,
+                      separatorBuilder: (_, __) => 12.hBox,
                       itemBuilder: (context, index) {
                         final tx = controller.transactions[index];
                         return _buildTransactionTile(
@@ -229,9 +229,9 @@ class HomeView extends GetView<HomeController> {
                         );
                       },
                     ),
-                    const SizedBox(height: 36),
+                    36.hBox,
                     _buildBarChartSection(context, isDark, theme),
-                    const SizedBox(height: 120),
+                    120.hBox,
                   ],
                 );
               }),
@@ -247,10 +247,10 @@ class HomeView extends GetView<HomeController> {
     final theme = context.theme;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(28),
+      padding: const .all(16),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: .circular(16),
         boxShadow: [
           BoxShadow(
             color: isDark
@@ -262,19 +262,19 @@ class HomeView extends GetView<HomeController> {
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: .start,
         children: [
-          Text(
+          AppText(
             "Total Balance",
             style: TextStyle(
               color: isDark ? Colors.white54 : Colors.grey.shade500,
               fontSize: 15,
-              fontWeight: FontWeight.w600,
+              fontWeight: .w600,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            "₹${controller.totalBalance.value.toStringAsFixed(0)}",
+          8.hBox,
+          AppText(
+            "₹${controller.totalBalance.value.toStringAsFixed(2)}",
             style: theme.textTheme.displayLarge?.copyWith(
               fontSize: 42,
               letterSpacing: -1.5,
@@ -296,10 +296,10 @@ class HomeView extends GetView<HomeController> {
     required bool isDark,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      padding: const .symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: .circular(16),
         boxShadow: [
           BoxShadow(
             color: isDark
@@ -311,28 +311,28 @@ class HomeView extends GetView<HomeController> {
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: .start,
         children: [
           Row(
             children: [
               Icon(icon, color: color, size: 28),
-              const SizedBox(width: 8),
-              Text(
+              8.wBox,
+              AppText(
                 title,
                 style: TextStyle(
                   color: isDark ? Colors.white54 : Colors.grey.shade500,
                   fontSize: 14,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: .w600,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Text(
+          12.hBox,
+          AppText(
             amount,
             style: TextStyle(
               fontSize: 22,
-              fontWeight: FontWeight.w800,
+              fontWeight: .w800,
               letterSpacing: -0.5,
               color: isDark ? Colors.white : Colors.black,
             ),
@@ -359,27 +359,27 @@ class HomeView extends GetView<HomeController> {
                   centerSpaceRadius: 85,
                   sections: controller.pieChartSections,
                 ),
-                swapAnimationDuration: const Duration(milliseconds: 600),
-                swapAnimationCurve: Curves.easeOutCubic,
+                duration: const Duration(milliseconds: 600),
+                curve: Curves.easeOutCubic,
               ),
               Center(
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisSize: .min,
                   children: [
-                    Text(
+                    AppText(
                       controller.centerChartText.split('\n')[0],
                       style: TextStyle(
                         fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: .w500,
                         color: isDark ? Colors.white54 : Colors.grey.shade500,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
+                    4.hBox,
+                    AppText(
                       controller.centerChartText.split('\n')[1],
                       style: TextStyle(
                         fontSize: 28,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: .w800,
                         letterSpacing: -0.5,
                         color: isDark ? Colors.white : Colors.black,
                       ),
@@ -414,25 +414,20 @@ class HomeView extends GetView<HomeController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        AppText(
           "Balance Breakdown",
           style: theme.textTheme.titleLarge?.copyWith(
             fontSize: 22,
-            fontWeight: FontWeight.w700,
+            fontWeight: .w700,
           ),
         ),
-        const SizedBox(height: 16),
+        16.hBox,
         Container(
           height: 240,
-          padding: const EdgeInsets.only(
-            top: 32,
-            bottom: 16,
-            left: 16,
-            right: 16,
-          ),
+          padding: const .only(top: 32, bottom: 16, left: 16, right: 16),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1E293B) : Colors.white,
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: .circular(16),
             boxShadow: [
               BoxShadow(
                 color: isDark
@@ -445,7 +440,7 @@ class HomeView extends GetView<HomeController> {
           ),
           child: BarChart(
             BarChartData(
-              alignment: BarChartAlignment.spaceAround,
+              alignment: .spaceAround,
               maxY: maxY == 0 ? 100 : maxY,
               barTouchData: BarTouchData(enabled: false),
               titlesData: FlTitlesData(
@@ -454,10 +449,7 @@ class HomeView extends GetView<HomeController> {
                   sideTitles: SideTitles(
                     showTitles: true,
                     getTitlesWidget: (double value, TitleMeta meta) {
-                      const style = TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                      );
+                      const style = TextStyle(fontWeight: .w600, fontSize: 12);
                       int index = value.toInt();
                       final data = controller.getLast7DaysData();
                       if (index < 0 || index >= data.length) {
@@ -466,8 +458,8 @@ class HomeView extends GetView<HomeController> {
 
                       String text = data[index]['label'];
                       return Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Text(
+                        padding: const .only(top: 8.0),
+                        child: AppText(
                           text,
                           style: style.copyWith(
                             color: isDark
@@ -505,13 +497,13 @@ class HomeView extends GetView<HomeController> {
                       toY: dayData['income'] as double,
                       color: const Color(0xFF34C759),
                       width: 10,
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: .circular(4),
                     ),
                     BarChartRodData(
                       toY: dayData['expense'] as double,
                       color: const Color(0xFFFF3B30),
                       width: 10,
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: .circular(4),
                     ),
                   ],
                 );
@@ -537,25 +529,25 @@ class HomeView extends GetView<HomeController> {
 
     return Dismissible(
       key: ValueKey(tx.id),
-      direction: DismissDirection.endToStart,
+      direction: .endToStart,
       confirmDismiss: (direction) async {
         return await showCupertinoDialog<bool>(
           context: context,
           builder: (context) => CupertinoAlertDialog(
-            title: const Text("Delete Transaction"),
-            content: const Text(
+            title: const AppText("Delete Transaction"),
+            content: const AppText(
               "Are you sure you want to delete this transaction?",
             ),
             actions: [
               CupertinoDialogAction(
                 isDefaultAction: true,
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text("Cancel"),
+                onPressed: () => Get.back(result: false),
+                child: const AppText("Cancel"),
               ),
               CupertinoDialogAction(
                 isDestructiveAction: true,
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text("Delete"),
+                onPressed: () => Get.back(result: true),
+                child: const AppText("Delete"),
               ),
             ],
           ),
@@ -567,19 +559,19 @@ class HomeView extends GetView<HomeController> {
         }
       },
       background: Container(
-        padding: const EdgeInsets.only(right: 20),
+        padding: const .only(right: 16),
         alignment: Alignment.centerRight,
         decoration: BoxDecoration(
           color: const Color(0xFFFF3B30),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: .circular(16),
         ),
         child: const Icon(CupertinoIcons.trash, color: Colors.white, size: 24),
       ),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: const .symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1E293B) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: .circular(16),
           boxShadow: [
             BoxShadow(
               color: isDark
@@ -597,7 +589,7 @@ class HomeView extends GetView<HomeController> {
               height: 48,
               decoration: BoxDecoration(
                 color: accentColor.withValues(alpha: isDark ? 0.2 : 0.1),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: .circular(16),
               ),
               child: Icon(
                 isIncome
@@ -607,36 +599,36 @@ class HomeView extends GetView<HomeController> {
                 size: 24,
               ),
             ),
-            const SizedBox(width: 16),
+            16.wBox,
             Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: .start,
                 children: [
-                  Text(
+                  AppText(
                     tx.category,
                     style: TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: .w600,
                       color: isDark ? Colors.white : Colors.black,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
+                  4.hBox,
+                  AppText(
                     DateFormat('MMM dd, yyyy').format(tx.date),
                     style: TextStyle(
                       fontSize: 13,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: .w500,
                       color: isDark ? Colors.white54 : Colors.grey.shade500,
                     ),
                   ),
                 ],
               ),
             ),
-            Text(
-              "${isIncome ? '+' : '-'}₹${tx.amount.toStringAsFixed(0)}",
+            AppText(
+              "${isIncome ? '+' : '-'}₹${tx.amount.toStringAsFixed(2)}",
               style: TextStyle(
                 fontSize: 17,
-                fontWeight: FontWeight.w700,
+                fontWeight: .w700,
                 color: accentColor,
                 letterSpacing: -0.3,
               ),
@@ -662,11 +654,11 @@ class HomeView extends GetView<HomeController> {
         return Container(
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1E293B) : Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+            borderRadius: const .vertical(top: .circular(32)),
           ),
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
+          padding: const .fromLTRB(16, 16, 16, 40),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize: .min,
             children: [
               // Grabber
               Container(
@@ -674,18 +666,18 @@ class HomeView extends GetView<HomeController> {
                 height: 5,
                 decoration: BoxDecoration(
                   color: Colors.grey.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: .circular(10),
                 ),
               ),
-              const SizedBox(height: 24),
-              Text(
+              24.hBox,
+              AppText(
                 "Select Month",
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontSize: 20,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: .w700,
                 ),
               ),
-              const SizedBox(height: 24),
+              24.hBox,
               // Year Swipe
               SizedBox(
                 height: 120,
@@ -700,11 +692,11 @@ class HomeView extends GetView<HomeController> {
                   children: List.generate(
                     DateTime.now().year - 2020 + 2,
                     (index) => Center(
-                      child: Text(
+                      child: AppText(
                         "${2020 + index}",
                         style: TextStyle(
                           fontSize: 20,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: .w600,
                           color: isDark ? Colors.white : Colors.black,
                         ),
                       ),
@@ -712,7 +704,7 @@ class HomeView extends GetView<HomeController> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              24.hBox,
               // Month Grid
               GridView.builder(
                 shrinkWrap: true,
@@ -738,10 +730,10 @@ class HomeView extends GetView<HomeController> {
                               : (isDark
                                     ? const Color(0xFF283040)
                                     : const Color(0xFFF0F1F5)),
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: .circular(16),
                         ),
-                        alignment: Alignment.center,
-                        child: Text(
+                        alignment: .center,
+                        child: AppText(
                           DateFormat('MMM').format(DateTime(2020, month)),
                           style: TextStyle(
                             color: isSelected
@@ -758,7 +750,7 @@ class HomeView extends GetView<HomeController> {
                   });
                 },
               ),
-              const SizedBox(height: 32),
+              32.hBox,
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -766,9 +758,9 @@ class HomeView extends GetView<HomeController> {
                     controller.selectMonth(
                       DateTime(tempYear.value, tempMonth.value),
                     );
-                    Navigator.pop(context);
+                    Screen.close();
                   },
-                  child: const Text("Apply", style: TextStyle(fontSize: 17)),
+                  child: const AppText("Apply", style: TextStyle(fontSize: 17)),
                 ),
               ),
             ],

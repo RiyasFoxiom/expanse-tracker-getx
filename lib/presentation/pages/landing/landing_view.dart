@@ -63,7 +63,7 @@ class _DynamicBottomNav extends StatelessWidget {
       final currentIndex = controller.currentIndex.value;
 
       return Container(
-        margin: const EdgeInsets.only(left: 28, right: 28, bottom: 32),
+        margin: const .only(left: 16, right: 16, bottom: 16),
         height: 72,
         decoration: BoxDecoration(
           color: isDark
@@ -79,15 +79,15 @@ class _DynamicBottomNav extends StatelessWidget {
               offset: const Offset(0, 10),
             ),
           ],
-          border: Border.all(
+          border: .all(
             color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white,
             width: 1.5,
           ),
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(36),
+          borderRadius: .circular(36),
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            filter: .blur(sigmaX: 12, sigmaY: 12),
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final tabWidth = constraints.maxWidth / items.length;
@@ -108,7 +108,7 @@ class _DynamicBottomNav extends StatelessWidget {
                         height: bubbleSize,
                         decoration: BoxDecoration(
                           color: theme.colorScheme.primary,
-                          shape: BoxShape.circle,
+                          shape: .circle,
                           boxShadow: [
                             BoxShadow(
                               color: theme.colorScheme.primary.withValues(
@@ -131,7 +131,7 @@ class _DynamicBottomNav extends StatelessWidget {
                           width: tabWidth,
                           child: GestureDetector(
                             onTap: () => controller.setIndex(index),
-                            behavior: HitTestBehavior.opaque,
+                            behavior: .opaque,
                             child: AnimatedTheme(
                               data: theme.copyWith(
                                 iconTheme: IconThemeData(
