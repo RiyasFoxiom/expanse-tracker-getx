@@ -1,85 +1,111 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:test_app/core/extensions/space_ext.dart';
+import 'package:test_app/core/helpers/screen_helper.dart';
 import 'package:test_app/presentation/controllers/profile/profile_controller.dart';
+import 'package:test_app/presentation/widgets/app_text.dart';
+
+// ── Neo Brutalism tokens ─────────────────────────────────────────────────────
+const _kBorder = BorderSide(color: Colors.black, width: 2.5);
+const _kAccentYellow = Color(0xFFFFE600);
+const _kAccentBlue = Color(0xFF2979FF);
+const _kAccentGreen = Color(0xFF00C853);
+const _kAccentOrange = Color(0xFFFF6D00);
+const _kAccentPurple = Color(0xFF7C4DFF);
 
 class ProfileView extends GetView<ProfileController> {
   const ProfileView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.theme;
-    final isDark = Get.isDarkMode;
+    final isDark = Theme.of(context).brightness == .dark;
+    final bg = isDark ? const Color(0xFF0F0F0F) : const Color(0xFFF5F5F0);
+    final cardBg = isDark ? const Color(0xFF1A1A1A) : Colors.white;
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: bg,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: bg,
         elevation: 0,
         scrolledUnderElevation: 0,
-        toolbarHeight: 70,
-        title: Text(
-          "Settings",
-          style: theme.textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.5,
+        toolbarHeight: 60,
+        centerTitle: true,
+        title: Padding(
+          padding: const .only(top: 8.0),
+          child: Container(
+            padding: const .symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: _kAccentYellow,
+              border: .all(color: Colors.black, width: 2.5),
+            ),
+            child: const AppText(
+              'SETTINGS',
+              style: TextStyle(
+                fontFamily: 'monospace',
+                fontSize: 18,
+                fontWeight: .w900,
+                color: Colors.black,
+                letterSpacing: 1.5,
+              ),
+            ),
           ),
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        padding: const .symmetric(horizontal: 16, vertical: 20),
         children: [
-          // Profile Banner
+          // ── Profile Banner ─────────────────────────────────────────
           Container(
-            padding: const EdgeInsets.all(24),
+            padding: const .all(16),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E293B) : Colors.white,
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: [
+              color: cardBg,
+              border: const .fromBorderSide(_kBorder),
+              boxShadow: const [
                 BoxShadow(
-                  color: isDark
-                      ? Colors.black.withValues(alpha: 0.2)
-                      : Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 24,
-                  offset: const Offset(0, 10),
+                  color: Colors.black,
+                  offset: Offset(6, 6),
+                  blurRadius: 0,
                 ),
               ],
             ),
             child: Row(
               children: [
+                // Avatar block
                 Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
+                  width: 72,
+                  height: 72,
+                  color: _kAccentYellow,
+                  child: const Icon(
                     CupertinoIcons.person_solid,
-                    size: 40,
-                    color: theme.colorScheme.primary,
+                    size: 38,
+                    color: Colors.black,
                   ),
                 ),
-                const SizedBox(width: 20),
+                18.wBox,
                 Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: .start,
                   children: [
-                    Text(
-                      "Your Profile",
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.3,
+                    Container(
+                      padding: const .symmetric(horizontal: 8, vertical: 3),
+                      color: Colors.black,
+                      child: const AppText(
+                        'YOUR PROFILE',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: .w900,
+                          letterSpacing: 1.5,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      "budget@tracker.app",
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontSize: 15,
-                        color: theme.colorScheme.onSurface.withValues(
-                          alpha: 0.6,
-                        ),
+                    8.hBox,
+                    AppText(
+                      'budget@tracker.app',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: .w700,
+                        color: isDark ? Colors.white70 : Colors.black54,
                       ),
                     ),
                   ],
@@ -87,206 +113,197 @@ class ProfileView extends GetView<ProfileController> {
               ],
             ),
           ),
-          const SizedBox(height: 48),
 
-          Text(
-            "PREFERENCES",
-            style: theme.textTheme.bodySmall?.copyWith(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.2,
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-            ),
-          ),
-          const SizedBox(height: 12),
+          32.hBox,
 
-          // Settings Group
-          Container(
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E293B) : Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: isDark
-                      ? Colors.black.withValues(alpha: 0.1)
-                      : Colors.black.withValues(alpha: 0.02),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                _buildSettingsRow(
-                  context,
-                  icon: CupertinoIcons.moon_stars_fill,
-                  iconColor: const Color(0xFF5E5CE6),
-                  title: "Theme Mode",
-                  trailing: Obx(() {
-                    final mode = controller.themeMode.value;
-                    final label = mode == ThemeMode.light
-                        ? "Light"
-                        : mode == ThemeMode.dark
-                        ? "Dark"
-                        : "System";
-                    return Row(
-                      children: [
-                        Text(
-                          label,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: theme.colorScheme.onSurface.withValues(
-                              alpha: 0.6,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Icon(
-                          CupertinoIcons.chevron_forward,
-                          size: 18,
-                          color: theme.colorScheme.onSurface.withValues(
-                            alpha: 0.3,
-                          ),
-                        ),
-                      ],
-                    );
-                  }),
-                  onTap: () => _showThemeBottomSheet(context),
-                  showDivider: false,
-                ),
-              ],
-            ),
-          ),
+          // ── PREFERENCES section label ──────────────────────────────
+          _sectionLabel('PREFERENCES', isDark),
+          10.hBox,
 
-          const SizedBox(height: 48),
-
-          Text(
-            "ABOUT",
-            style: theme.textTheme.bodySmall?.copyWith(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.2,
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // About Group
-          Container(
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E293B) : Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: isDark
-                      ? Colors.black.withValues(alpha: 0.1)
-                      : Colors.black.withValues(alpha: 0.02),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                _buildSettingsRow(
-                  context,
-                  icon: CupertinoIcons.star_fill,
-                  iconColor: const Color(0xFFFF9500),
-                  title: "Rate App",
-                  onTap: () {},
-                  showDivider: true,
-                ),
-                _buildSettingsRow(
-                  context,
-                  icon: CupertinoIcons.shield_fill,
-                  iconColor: const Color(0xFF34C759),
-                  title: "Privacy Policy",
-                  onTap: () {},
-                  showDivider: true,
-                ),
-                _buildSettingsRow(
-                  context,
-                  icon: CupertinoIcons.info_circle_fill,
-                  iconColor: const Color(0xFF007AFF),
-                  title: "App Version",
-                  trailing: Obx(
-                    () => Text(
-                      controller.appVersion.value.isEmpty
-                          ? '...'
-                          : controller.appVersion.value,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: theme.colorScheme.onSurface.withValues(
-                          alpha: 0.6,
-                        ),
+          // Theme Mode row
+          _buildSettingsRow(
+            isDark: isDark,
+            cardBg: cardBg,
+            accentColor: _kAccentPurple,
+            icon: CupertinoIcons.moon_stars_fill,
+            title: 'THEME MODE',
+            trailing: Obx(() {
+              final mode = controller.themeMode.value;
+              final label = mode == ThemeMode.light
+                  ? 'LIGHT'
+                  : mode == ThemeMode.dark
+                  ? 'DARK'
+                  : 'SYSTEM';
+              return Row(
+                children: [
+                  Container(
+                    padding: const .symmetric(horizontal: 8, vertical: 3),
+                    color: _kAccentPurple,
+                    child: AppText(
+                      label,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: .w900,
+                        letterSpacing: 1,
+                        color: Colors.white,
                       ),
                     ),
                   ),
-                  onTap: () {},
-                  showDivider: false,
-                ),
-              ],
-            ),
+                  8.wBox,
+                  Icon(
+                    Icons.arrow_forward,
+                    size: 16,
+                    color: isDark ? Colors.white54 : Colors.black45,
+                  ),
+                ],
+              );
+            }),
+            onTap: () => _showThemeBottomSheet(context),
+            showBottomBorder: false,
           ),
 
-          const SizedBox(height: 100),
+          32.hBox,
+
+          // ── ABOUT section label ────────────────────────────────────
+          _sectionLabel('ABOUT', isDark),
+          10.hBox,
+
+          // Rate App
+          _buildSettingsRow(
+            isDark: isDark,
+            cardBg: cardBg,
+            accentColor: _kAccentOrange,
+            icon: CupertinoIcons.star_fill,
+            title: 'RATE APP',
+            onTap: () {},
+            showBottomBorder: true,
+          ),
+          // Privacy Policy
+          _buildSettingsRow(
+            isDark: isDark,
+            cardBg: cardBg,
+            accentColor: _kAccentGreen,
+            icon: CupertinoIcons.shield_fill,
+            title: 'PRIVACY POLICY',
+            onTap: () {},
+            showBottomBorder: true,
+          ),
+          // App Version
+          _buildSettingsRow(
+            isDark: isDark,
+            cardBg: cardBg,
+            accentColor: _kAccentBlue,
+            icon: CupertinoIcons.info_circle_fill,
+            title: 'APP VERSION',
+            trailing: Obx(
+              () => Container(
+                padding: const .symmetric(horizontal: 8, vertical: 3),
+                color: _kAccentBlue,
+                child: AppText(
+                  controller.appVersion.value.isEmpty
+                      ? '...'
+                      : controller.appVersion.value.toUpperCase(),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: .w900,
+                    letterSpacing: 1,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            onTap: () {},
+            showBottomBorder: false,
+          ),
+
+          100.hBox,
         ],
       ),
     );
   }
 
-  Widget _buildSettingsRow(
-    BuildContext context, {
+  // ── Section Label ──────────────────────────────────────────────────────────
+  Widget _sectionLabel(String text, bool isDark) {
+    return Row(
+      children: [
+        Container(width: 4, height: 20, color: _kAccentYellow),
+        8.wBox,
+        AppText(
+          text,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: .w900,
+            letterSpacing: 2,
+            color: isDark ? Colors.white60 : Colors.black45,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Settings Row ───────────────────────────────────────────────────────────
+  Widget _buildSettingsRow({
+    required bool isDark,
+    required Color cardBg,
+    required Color accentColor,
     required IconData icon,
-    required Color iconColor,
     required String title,
     Widget? trailing,
     required VoidCallback onTap,
-    required bool showDivider,
+    required bool showBottomBorder,
   }) {
-    final theme = context.theme;
-
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(24),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        child: Column(
+      child: Container(
+        padding: const .symmetric(horizontal: 16, vertical: 16),
+        decoration: BoxDecoration(
+          color: cardBg,
+          border: Border(
+            left: const BorderSide(color: Colors.black, width: 2.5),
+            right: const BorderSide(color: Colors.black, width: 2.5),
+            top: const BorderSide(color: Colors.black, width: 2.5),
+            bottom: showBottomBorder
+                ? const BorderSide(color: Colors.black, width: 1)
+                : const BorderSide(color: Colors.black, width: 2.5),
+          ),
+          boxShadow: showBottomBorder
+              ? null
+              : const [
+                  BoxShadow(
+                    color: Colors.black,
+                    offset: Offset(4, 4),
+                    blurRadius: 0,
+                  ),
+                ],
+        ),
+        child: Row(
           children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: iconColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(icon, color: iconColor, size: 20),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                if (trailing != null) trailing,
-                if (trailing == null)
-                  Icon(
-                    CupertinoIcons.chevron_forward,
-                    size: 18,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
-                  ),
-              ],
+            // Icon block
+            Container(
+              width: 40,
+              height: 40,
+              color: accentColor,
+              child: Icon(icon, color: Colors.white, size: 20),
             ),
-            if (showDivider)
-              Container(
-                margin: const EdgeInsets.only(top: 16, left: 52),
-                height: 0.5,
-                color: theme.dividerColor,
+            16.wBox,
+            Expanded(
+              child: AppText(
+                title,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: .w900,
+                  letterSpacing: 0.5,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+              ),
+            ),
+            if (trailing != null)
+              trailing
+            else
+              Icon(
+                Icons.arrow_forward,
+                size: 18,
+                color: isDark ? Colors.white38 : Colors.black38,
               ),
           ],
         ),
@@ -294,58 +311,80 @@ class ProfileView extends GetView<ProfileController> {
     );
   }
 
+  // ── Theme Bottom Sheet ─────────────────────────────────────────────────────
   void _showThemeBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) {
-        final theme = context.theme;
-        final isDark = Get.isDarkMode;
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        final sheetIsDark =
+            Theme.of(sheetContext).brightness == Brightness.dark;
+        final sheetBg = sheetIsDark
+            ? const Color(0xFF0F0F0F)
+            : const Color(0xFFF5F5F0);
+        final sheetCardBg = sheetIsDark
+            ? const Color(0xFF1A1A1A)
+            : Colors.white;
         return Container(
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
+          padding: const .fromLTRB(16, 16, 16, 40),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E293B) : Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+            color: sheetBg,
+            border: const Border(
+              top: BorderSide(color: Colors.black, width: 2.5),
+              left: BorderSide(color: Colors.black, width: 2.5),
+              right: BorderSide(color: Colors.black, width: 2.5),
+            ),
           ),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize: .min,
             children: [
+              // Grabber
+              Container(width: 40, height: 4, color: Colors.black26),
+              20.hBox,
+              // Sheet Title
               Container(
-                width: 40,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: Colors.grey.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(10),
+                padding: const .symmetric(horizontal: 12, vertical: 6),
+                color: _kAccentYellow,
+                child: AppText(
+                  'SELECT THEME',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: .w900,
+                    letterSpacing: 2,
+                    color: Colors.black,
+                  ),
                 ),
               ),
-              const SizedBox(height: 24),
-              Text(
-                "Select Theme",
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 24),
+              20.hBox,
               _buildThemeOption(
-                context,
-                ThemeMode.system,
-                "System Default",
-                CupertinoIcons.device_phone_portrait,
+                sheetContext,
+                cardBg: sheetCardBg,
+                isDark: sheetIsDark,
+                mode: .system,
+                label: 'SYSTEM DEFAULT',
+                icon: CupertinoIcons.device_phone_portrait,
+                accentColor: _kAccentBlue,
               ),
-              const SizedBox(height: 12),
+              10.hBox,
               _buildThemeOption(
-                context,
-                ThemeMode.light,
-                "Light Mode",
-                CupertinoIcons.sun_max_fill,
+                sheetContext,
+                cardBg: sheetCardBg,
+                isDark: sheetIsDark,
+                mode: .light,
+                label: 'LIGHT MODE',
+                icon: CupertinoIcons.sun_max_fill,
+                accentColor: _kAccentOrange,
               ),
-              const SizedBox(height: 12),
+              10.hBox,
               _buildThemeOption(
-                context,
-                ThemeMode.dark,
-                "Dark Mode",
-                CupertinoIcons.moon_fill,
+                sheetContext,
+                cardBg: sheetCardBg,
+                isDark: sheetIsDark,
+                mode: .dark,
+                label: 'DARK MODE',
+                icon: CupertinoIcons.moon_fill,
+                accentColor: _kAccentPurple,
               ),
             ],
           ),
@@ -355,61 +394,68 @@ class ProfileView extends GetView<ProfileController> {
   }
 
   Widget _buildThemeOption(
-    BuildContext context,
-    ThemeMode mode,
-    String title,
-    IconData icon,
-  ) {
-    final isDark = Get.isDarkMode;
+    BuildContext context, {
+    required Color cardBg,
+    required bool isDark,
+    required ThemeMode mode,
+    required String label,
+    required IconData icon,
+    required Color accentColor,
+  }) {
     return Obx(() {
       final isSelected = controller.themeMode.value == mode;
-      final theme = context.theme;
       return GestureDetector(
         onTap: () {
           controller.setTheme(mode);
-          Navigator.pop(context);
+          Screen.close();
         },
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          duration: const Duration(milliseconds: 150),
+          padding: const .symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            color: isSelected
-                ? theme.colorScheme.primary.withValues(alpha: 0.1)
-                : (isDark ? const Color(0xFF283040) : const Color(0xFFF0F1F5)),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: isSelected
-                  ? theme.colorScheme.primary
-                  : Colors.transparent,
-              width: 1.5,
-            ),
+            color: isSelected ? accentColor : cardBg,
+            border: .all(color: Colors.black, width: 2.5),
+            boxShadow: isSelected
+                ? const [
+                    BoxShadow(
+                      color: Colors.black,
+                      offset: Offset(3, 3),
+                      blurRadius: 0,
+                    ),
+                  ]
+                : null,
           ),
           child: Row(
             children: [
               Icon(
                 icon,
-                color: isSelected
-                    ? theme.colorScheme.primary
-                    : (isDark ? Colors.white70 : Colors.black87),
                 size: 22,
+                color: isSelected
+                    ? Colors.white
+                    : (isDark ? Colors.white70 : Colors.black87),
               ),
-              const SizedBox(width: 16),
+              16.wBox,
               Expanded(
-                child: Text(
-                  title,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                child: AppText(
+                  label,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: .w900,
+                    letterSpacing: 0.8,
                     color: isSelected
-                        ? theme.colorScheme.primary
+                        ? Colors.white
                         : (isDark ? Colors.white : Colors.black),
                   ),
                 ),
               ),
               if (isSelected)
-                Icon(
-                  CupertinoIcons.check_mark_circled_solid,
-                  color: theme.colorScheme.primary,
-                  size: 22,
+                Container(
+                  padding: const .all(2),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: .circle,
+                  ),
+                  child: Icon(Icons.check, size: 14, color: accentColor),
                 ),
             ],
           ),

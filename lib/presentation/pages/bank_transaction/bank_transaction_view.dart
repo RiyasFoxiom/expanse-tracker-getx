@@ -2,227 +2,259 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:test_app/core/extensions/space_ext.dart';
+import 'package:test_app/core/helpers/screen_helper.dart';
 import 'package:test_app/presentation/controllers/bank_transaction/bank_transaction_controller.dart';
+import 'package:test_app/presentation/widgets/app_text.dart';
+
+// ── Neo Brutalism tokens ─────────────────────────────────────────────────────
+const _kAccentYellow = Color(0xFFFFE600);
+const _kAccentGreen = Color(0xFF00C853);
+const _kAccentRed = Color(0xFFFF1744);
 
 class BankTransactionView extends GetView<BankTransactionController> {
   const BankTransactionView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.theme;
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == .dark;
+    final bg = isDark ? const Color(0xFF0F0F0F) : const Color(0xFFF5F5F0);
+    final cardBg = isDark ? const Color(0xFF1A1A1A) : Colors.white;
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      body: CustomScrollView(
-        physics: const AlwaysScrollableScrollPhysics(
-          parent: BouncingScrollPhysics(),
-        ),
-        slivers: [
-          // Apple-style Large Title Header
-          SliverAppBar(
-            backgroundColor: theme.scaffoldBackgroundColor,
-            expandedHeight: 120.0,
-            floating: false,
-            pinned: true,
-            elevation: 0,
-            scrolledUnderElevation: 0,
-            leading: CupertinoButton(
-              padding: EdgeInsets.zero,
-              onPressed: () => Get.back(),
-              child: Icon(
-                CupertinoIcons.back,
+      backgroundColor: bg,
+      appBar: AppBar(
+        backgroundColor: bg,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        toolbarHeight: 60,
+        centerTitle: true,
+        leading: GestureDetector(
+          onTap: () => Screen.close(),
+          child: Container(
+            margin: const .all(10),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.white : Colors.black,
+              border: .all(
                 color: isDark ? Colors.white : Colors.black,
+                width: 2,
               ),
             ),
-            flexibleSpace: FlexibleSpaceBar(
-              titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
-              title: Text(
-                controller.bank.name,
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.5,
-                  fontSize: 28,
-                ),
+            child: Icon(
+              CupertinoIcons.back,
+              color: isDark ? Colors.black : Colors.white,
+              size: 20,
+            ),
+          ),
+        ),
+        title: Padding(
+          padding: const .only(top: 8.0),
+          child: Container(
+            padding: const .symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: _kAccentYellow,
+              border: .all(color: Colors.black, width: 2.5),
+            ),
+            child: AppText(
+              controller.bank.name.toUpperCase(),
+              style: const TextStyle(
+                fontFamily: 'monospace',
+                fontSize: 16,
+                fontWeight: .w900,
+                color: Colors.black,
+                letterSpacing: 1.5,
               ),
             ),
           ),
+        ),
+      ),
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return const Center(child: CupertinoActivityIndicator(radius: 16));
+        }
 
-          // Content
-          SliverToBoxAdapter(
-            child: Obx(() {
-              if (controller.isLoading.value) {
-                return const Padding(
-                  padding: EdgeInsets.only(top: 100),
-                  child: Center(child: CupertinoActivityIndicator(radius: 16)),
-                );
-              }
-
-              if (controller.transactions.isEmpty) {
-                return Padding(
-                  padding: const EdgeInsets.only(top: 100),
-                  child: Center(
-                    child: Column(
-                      children: [
-                        Icon(
-                          CupertinoIcons.building_2_fill,
-                          size: 80,
-                          color: Colors.grey.withValues(alpha: 0.4),
-                        ),
-                        const SizedBox(height: 24),
-                        Text(
-                          "No transactions yet",
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          "Transactions matched to this account\nwill appear here.",
-                          style: TextStyle(
-                            color: isDark
-                                ? Colors.white54
-                                : Colors.grey.shade500,
-                            fontSize: 15,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
+        if (controller.transactions.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: .center,
+              children: [
+                Container(
+                  padding: const .all(24),
+                  decoration: BoxDecoration(
+                    color: cardBg,
+                    border: .all(color: Colors.black, width: 2.5),
+                    boxShadow: const [
+                      BoxShadow(color: Colors.black, offset: Offset(6, 6)),
+                    ],
                   ),
-                );
-              }
-
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 8,
+                  child: Icon(
+                    CupertinoIcons.building_2_fill,
+                    size: 50,
+                    color: isDark ? Colors.white54 : Colors.black45,
+                  ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "TRANSACTIONS HISTORY",
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.2,
-                        color: theme.colorScheme.onSurface.withValues(
-                          alpha: 0.5,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: isDark
-                                ? Colors.black.withValues(alpha: 0.1)
-                                : Colors.black.withValues(alpha: 0.02),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        padding: EdgeInsets.zero,
-                        itemCount: controller.transactions.length,
-                        separatorBuilder: (context, index) => Container(
-                          margin: const EdgeInsets.only(left: 72),
-                          height: 0.5,
-                          color: theme.dividerColor,
-                        ),
-                        itemBuilder: (context, index) {
-                          final tx = controller.transactions[index];
-                          final isIncome = tx.type == 'income';
-                          final accentColor = isIncome
-                              ? const Color(0xFF34C759)
-                              : const Color(0xFFFF3B30);
+                24.hBox,
+                AppText(
+                  "NO TRANSACTIONS YET",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: .w900,
+                    color: isDark ? Colors.white54 : Colors.black54,
+                    letterSpacing: 1,
+                  ),
+                ),
+                8.hBox,
+                AppText(
+                  "MATCHED TRANSACTIONS WILL APPEAR HERE",
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: .w700,
+                    color: isDark ? Colors.white38 : Colors.black38,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
 
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 16,
-                            ),
+        return CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const .all(16.0),
+                child: Column(
+                  crossAxisAlignment: .start,
+                  children: [
+                    _nbLabel("TRANSACTION HISTORY", isDark),
+                    18.hBox,
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: controller.transactions.length,
+                      separatorBuilder: (_, index) => 16.hBox,
+                      itemBuilder: (context, index) {
+                        final tx = controller.transactions[index];
+                        final isIncome = tx.type == 'income';
+                        final accentColor = isIncome
+                            ? _kAccentGreen
+                            : _kAccentRed;
+
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: cardBg,
+                            border: .all(color: Colors.black, width: 2.5),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Colors.black,
+                                offset: Offset(4, 4),
+                              ),
+                            ],
+                          ),
+                          child: Padding(
+                            padding: const .all(16),
                             child: Row(
                               children: [
                                 Container(
                                   width: 44,
                                   height: 44,
                                   decoration: BoxDecoration(
-                                    color: accentColor.withValues(
-                                      alpha: isDark ? 0.2 : 0.1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(14),
+                                    color: accentColor,
+                                    border: .all(color: Colors.black, width: 2),
                                   ),
                                   child: Icon(
                                     isIncome
-                                        ? CupertinoIcons.arrow_down_right
+                                        ? CupertinoIcons.arrow_down_left
                                         : CupertinoIcons.arrow_up_right,
-                                    color: accentColor,
-                                    size: 22,
+                                    color: Colors.white,
+                                    size: 20,
                                   ),
                                 ),
-                                const SizedBox(width: 16),
+                                16.wBox,
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    crossAxisAlignment: .start,
                                     children: [
-                                      Text(
-                                        tx.category,
-                                        style: TextStyle(
-                                          fontSize: 17,
-                                          fontWeight: FontWeight.w600,
-                                          color: isDark
-                                              ? Colors.white
-                                              : Colors.black,
+                                      AppText(
+                                        tx.category.toUpperCase(),
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: .w900,
+                                          letterSpacing: 0.5,
                                         ),
                                       ),
-                                      const SizedBox(height: 4),
-                                      Text(
+                                      4.hBox,
+                                      AppText(
                                         DateFormat(
                                           'MMM dd, yyyy',
-                                        ).format(tx.date),
+                                        ).format(tx.date).toUpperCase(),
                                         style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w400,
+                                          fontSize: 11,
+                                          fontWeight: .w700,
                                           color: isDark
                                               ? Colors.white54
-                                              : Colors.grey.shade600,
+                                              : Colors.black54,
+                                          letterSpacing: 1,
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-                                Text(
-                                  "${isIncome ? '+' : '-'}₹${tx.amount.toStringAsFixed(0)}",
-                                  style: TextStyle(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w700,
-                                    color: accentColor,
-                                    letterSpacing: -0.3,
-                                  ),
+                                Column(
+                                  crossAxisAlignment: .end,
+                                  children: [
+                                    AppText(
+                                      "${isIncome ? '+' : '-'}₹${tx.amount.toStringAsFixed(2)}",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: .w900,
+                                        color: accentColor,
+                                      ),
+                                    ),
+                                    if (tx.notes != null &&
+                                        tx.notes!.isNotEmpty) ...[
+                                      2.hBox,
+                                      const Icon(
+                                        CupertinoIcons.text_bubble_fill,
+                                        size: 12,
+                                        color: Colors.black26,
+                                      ),
+                                    ],
+                                  ],
                                 ),
                               ],
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                        );
+                      },
                     ),
-                    const SizedBox(height: 80),
+                    100.hBox,
                   ],
                 ),
-              );
-            }),
-          ),
-        ],
+              ),
+            ),
+          ],
+        );
+      }),
+    );
+  }
+
+  Widget _nbLabel(String text, bool isDark) {
+    return Container(
+      padding: const .symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white : Colors.black,
+        border: .all(color: isDark ? Colors.white : Colors.black, width: 2),
+      ),
+      child: AppText(
+        text,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: .w900,
+          letterSpacing: 1.5,
+          color: isDark ? Colors.black : Colors.white,
+        ),
       ),
     );
   }

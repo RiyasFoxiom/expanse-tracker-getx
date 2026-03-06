@@ -22,8 +22,8 @@ class AddBanksController extends GetxController {
     final last4Digits = cardNumberController.text.trim();
     final balanceStr = balanceController.text.trim();
 
-    if (name.isEmpty || balanceStr.isEmpty) {
-      Get.snackbar('Error', 'Please fill required fields');
+    if (name.isEmpty) {
+      Get.snackbar('Error', 'Account name is required');
       return;
     }
 
@@ -84,7 +84,7 @@ class AddBanksController extends GetxController {
 
     nameController.text = bank.name;
     selectedType.value = bank.type;
-    balanceController.text = bank.balance.toStringAsFixed(0);
+    balanceController.text = bank.balance.toStringAsFixed(2);
 
     // Extract last 4 digits from **** **** **** 1234
     final parts = bank.cardNumber.split(' ');

@@ -89,7 +89,7 @@ class CategoriesChartController extends GetxController {
       return PieChartSectionData(
         color: getColor(entry.key),
         value: entry.value,
-        title: '${percentage.toStringAsFixed(0)}%',
+        title: '${percentage.toStringAsFixed(2)}%',
         radius: 70,
         titleStyle: const TextStyle(
           fontSize: 14,
@@ -110,7 +110,7 @@ class CategoriesChartController extends GetxController {
       return PieChartSectionData(
         color: getColor(entry.key),
         value: entry.value,
-        title: '${percentage.toStringAsFixed(0)}%',
+        title: '${percentage.toStringAsFixed(2)}%',
         radius: 70,
         titleStyle: const TextStyle(
           fontSize: 14,

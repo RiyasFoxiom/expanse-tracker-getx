@@ -1,417 +1,351 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:test_app/core/extensions/space_ext.dart';
+import 'package:test_app/core/helpers/screen_helper.dart';
 import 'package:test_app/presentation/controllers/add_banks/add_banks_controller.dart';
+import 'package:test_app/presentation/widgets/app_text.dart';
+
+// ── Neo Brutalism tokens ─────────────────────────────────────────────────────
+const _kAccentYellow = Color(0xFFFFE600);
+const _kAccentGreen = Color(0xFF00C853);
+const _kAccentBlue = Color(0xFF2979FF);
+const _kAccentPurple = Color(0xFF7C4DFF);
 
 class AddBanksView extends GetView<AddBanksController> {
   const AddBanksView({super.key});
 
-  // ── Type chip data
   static const _types = [
-    {'key': 'savings', 'icon': Icons.savings_rounded, 'label': 'Savings'},
-    {'key': 'credit', 'icon': Icons.credit_card_rounded, 'label': 'Credit'},
     {
-      'key': 'debit',
-      'icon': Icons.account_balance_wallet_rounded,
-      'label': 'Debit',
+      'key': 'savings',
+      'icon': CupertinoIcons.money_dollar_circle,
+      'label': 'SAVINGS',
     },
+    {'key': 'credit', 'icon': CupertinoIcons.creditcard, 'label': 'CREDIT'},
+    {'key': 'debit', 'icon': CupertinoIcons.bag, 'label': 'DEBIT'},
+    {'key': 'salary', 'icon': CupertinoIcons.briefcase, 'label': 'SALARY'},
   ];
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.theme;
-    final colorScheme = theme.colorScheme;
-    final isDark = Get.isDarkMode;
+    final isDark = Theme.of(context).brightness == .dark;
+    final bg = isDark ? const Color(0xFF0F0F0F) : const Color(0xFFF5F5F0);
+    final cardBg = isDark ? const Color(0xFF1A1A1A) : Colors.white;
 
     return Scaffold(
-      body: Column(
-        children: [
-          // ── Fixed Header
-          Container(
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + 8,
-              bottom: 28,
-              left: 24,
-              right: 24,
-            ),
+      backgroundColor: bg,
+      appBar: AppBar(
+        backgroundColor: bg,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: GestureDetector(
+          onTap: () => Screen.close(),
+          child: Container(
+            margin: const .all(10),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: isDark
-                    ? [const Color(0xFF1E1B4B), const Color(0xFF0F172A)]
-                    : [Colors.deepPurple.shade600, Colors.deepPurple.shade900],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+              color: isDark ? Colors.white : Colors.black,
+              border: .all(
+                color: isDark ? Colors.white : Colors.black,
+                width: 2,
               ),
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(28),
-                bottomRight: Radius.circular(28),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.deepPurple.withValues(
-                    alpha: isDark ? 0.3 : 0.2,
-                  ),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-              ],
             ),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () => Get.back(),
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.arrow_back_ios_new,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                      ),
-                    ),
-                    const Spacer(),
-                    Obx(
-                      () => Text(
-                        controller.isEditing.value
-                            ? "Edit Bank / Card"
-                            : "Add Bank / Card",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    const Spacer(),
-                    // invisible placeholder for centering
-                    const SizedBox(width: 34),
-                  ],
-                ),
-                20.hBox,
-                // Decorative icon
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.add_card_rounded,
-                    color: Colors.white,
-                    size: 32,
-                  ),
-                ),
-                12.hBox,
-                Text(
-                  "Fill in the details below",
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.6),
-                    fontSize: 13,
-                  ),
-                ),
-              ],
+            child: Icon(
+              CupertinoIcons.back,
+              color: isDark ? Colors.black : Colors.white,
+              size: 20,
             ),
           ),
+        ),
+        title: Padding(
+          padding: const .only(top: 8.0),
+          child: Container(
+            padding: const .symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: _kAccentYellow,
+              border: .all(color: Colors.black, width: 2.5),
+            ),
+            child: Obx(
+              () => AppText(
+                controller.isEditing.value ? "EDIT BANK" : "ADD BANK",
+                style: const TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 16,
+                  fontWeight: .w900,
+                  color: Colors.black,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const .fromLTRB(16, 24, 16, 32),
+        child: Column(
+          crossAxisAlignment: .start,
+          children: [
+            // Bank Name
+            _nbLabel("BANK / CARD NAME", isDark),
+            12.hBox,
+            _nbTextField(
+              controller: controller.nameController,
+              hint: "HDFC, AXIS, AMEX...",
+              isDark: isDark,
+              cardBg: cardBg,
+              capitalization: .words,
+            ),
+            20.hBox,
 
-          // ── Scrollable Form
-          Expanded(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(20, 28, 20, 32),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            // Account Type
+            _nbLabel("ACCOUNT TYPE", isDark),
+            12.hBox,
+            Obx(() {
+              final selected = controller.selectedType.value;
+              return Row(
+                children: _types.map((t) {
+                  final key = t['key'] as String;
+                  final isSelected = selected == key;
+                  return Expanded(
+                    child: _nbTypeCard(
+                      label: t['label'] as String,
+                      icon: t['icon'] as IconData,
+                      isSelected: isSelected,
+                      onTap: () => controller.selectedType.value = key,
+                      isDark: isDark,
+                      cardBg: cardBg,
+                    ),
+                  );
+                }).toList(),
+              );
+            }),
+            20.hBox,
+
+            // Card Number
+            _nbLabel("CARD NUMBER (LAST 4)", isDark),
+            12.hBox,
+            _nbTextField(
+              controller: controller.cardNumberController,
+              hint: "1234",
+              isDark: isDark,
+              cardBg: cardBg,
+              keyboardType: TextInputType.number,
+              formatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(4),
+              ],
+              prefix: "•••• •••• •••• ",
+            ),
+            20.hBox,
+
+            // Balance
+            _nbLabel("OPENING BALANCE", isDark),
+            12.hBox,
+            _nbTextField(
+              controller: controller.balanceController,
+              hint: "0.00",
+              isDark: isDark,
+              cardBg: cardBg,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              prefix: "₹ ",
+            ),
+            48.hBox,
+
+            // Save Button
+            Obx(() {
+              final isSaving = controller.isSaving.value;
+              final isEditing = controller.isEditing.value;
+              return Column(
                 children: [
-                  // ── Bank Name
-                  _buildLabel("Bank / Card Name"),
-                  8.hBox,
-                  _buildTextField(
-                    context: context,
-                    controller: controller.nameController,
-                    hint: "e.g., HDFC Savings, Amex Credit",
-                    icon: Icons.account_balance_rounded,
-                    capitalization: TextCapitalization.words,
-                  ),
-                  28.hBox,
-
-                  // ── Account Type (chips)
-                  _buildLabel("Account Type"),
-                  12.hBox,
-                  Obx(
-                    () => Row(
-                      children: _types.map((t) {
-                        final key = t['key'] as String;
-                        final icon = t['icon'] as IconData;
-                        final label = t['label'] as String;
-                        final isSelected = controller.selectedType.value == key;
-                        return Expanded(
-                          child: GestureDetector(
-                            onTap: () => controller.selectedType.value = key,
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              margin: EdgeInsets.only(
-                                right: key != 'debit' ? 10 : 0,
-                              ),
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? colorScheme.primary.withValues(
-                                        alpha: isDark ? 0.25 : 0.1,
-                                      )
-                                    : theme.cardColor,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: isSelected
-                                      ? colorScheme.primary
-                                      : (isDark
-                                            ? Colors.grey.shade700
-                                            : Colors.grey.shade300),
-                                  width: isSelected ? 2 : 1,
-                                ),
-                                boxShadow: isSelected
-                                    ? [
-                                        BoxShadow(
-                                          color: colorScheme.primary.withValues(
-                                            alpha: 0.15,
-                                          ),
-                                          blurRadius: 10,
-                                          offset: const Offset(0, 4),
-                                        ),
-                                      ]
-                                    : [],
-                              ),
-                              child: Column(
-                                children: [
-                                  Icon(
-                                    icon,
-                                    size: 24,
-                                    color: isSelected
-                                        ? colorScheme.primary
-                                        : colorScheme.onSurface.withValues(
-                                            alpha: 0.5,
-                                          ),
-                                  ),
-                                  8.hBox,
-                                  Text(
-                                    label,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: isSelected
-                                          ? FontWeight.w700
-                                          : FontWeight.w500,
-                                      color: isSelected
-                                          ? colorScheme.primary
-                                          : colorScheme.onSurface.withValues(
-                                              alpha: 0.6,
-                                            ),
-                                    ),
-                                  ),
-                                  if (isSelected) ...[
-                                    6.hBox,
-                                    Container(
-                                      width: 6,
-                                      height: 6,
-                                      decoration: BoxDecoration(
-                                        color: colorScheme.primary,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  28.hBox,
-
-                  // ── Card Number
-                  _buildLabel("Card / Account Number (Last 4 digits)"),
-                  8.hBox,
-                  _buildTextField(
-                    context: context,
-                    controller: controller.cardNumberController,
-                    hint: "1234",
-                    icon: Icons.credit_card_outlined,
-                    keyboardType: TextInputType.number,
-                    formatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(4),
-                    ],
-                    prefix: "•••• •••• •••• ",
-                  ),
-                  28.hBox,
-
-                  // ── Opening Balance
-                  _buildLabel("Opening Balance"),
-                  8.hBox,
-                  _buildTextField(
-                    context: context,
-                    controller: controller.balanceController,
-                    hint: "0.00",
-                    icon: Icons.account_balance_wallet_outlined,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    prefix: "₹ ",
-                  ),
-                  40.hBox,
-
-                  // ── Save Button
-                  Obx(
-                    () => SizedBox(
+                  GestureDetector(
+                    onTap: isSaving ? null : controller.saveBank,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
                       width: double.infinity,
-                      height: 58,
-                      child: ElevatedButton(
-                        onPressed: controller.isSaving.value
-                            ? null
-                            : controller.saveBank,
-                        style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation: controller.isSaving.value ? 0 : 4,
-                        ),
-                        child: controller.isSaving.value
-                            ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.5,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: _kAccentBlue,
+                        border: .all(color: Colors.black, width: 2.5),
+                        boxShadow: isSaving
+                            ? []
+                            : const [
+                                BoxShadow(
+                                  color: Colors.black,
+                                  offset: Offset(4, 4),
+                                ),
+                              ],
+                      ),
+                      alignment: .center,
+                      child: isSaving
+                          ? const CupertinoActivityIndicator(
+                              color: Colors.white,
+                            )
+                          : Row(
+                              mainAxisAlignment: .center,
+                              children: [
+                                Icon(
+                                  isEditing
+                                      ? CupertinoIcons.check_mark_circled
+                                      : CupertinoIcons.add_circled,
                                   color: Colors.white,
                                 ),
-                              )
-                            : Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    controller.isEditing.value
-                                        ? Icons.check_circle_outline_rounded
-                                        : Icons.add_circle_outline_rounded,
-                                    size: 22,
+                                12.wBox,
+                                AppText(
+                                  isEditing ? "UPDATE BANK" : "SAVE BANK",
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: .w900,
+                                    color: Colors.white,
+                                    letterSpacing: 1.5,
                                   ),
-                                  10.wBox,
-                                  Text(
-                                    controller.isEditing.value
-                                        ? "Update Bank / Card"
-                                        : "Save Bank / Card",
-                                    style: const TextStyle(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                      ),
+                                ),
+                              ],
+                            ),
                     ),
                   ),
-
-                  16.hBox,
-
-                  // ── Cancel / secondary button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: OutlinedButton(
-                      onPressed: () => Get.back(),
-                      child: const Text(
-                        "Cancel",
+                  20.hBox,
+                  GestureDetector(
+                    onTap: () => Get.back(),
+                    child: Container(
+                      width: double.infinity,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.white10 : Colors.black12,
+                        border: .all(color: Colors.black, width: 2.5),
+                        boxShadow: const [
+                          BoxShadow(color: Colors.black, offset: Offset(4, 4)),
+                        ],
+                      ),
+                      alignment: .center,
+                      child: AppText(
+                        "CANCEL",
                         style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          fontWeight: .w900,
+                          color: Colors.white,
+                          letterSpacing: 1.5,
                         ),
                       ),
                     ),
                   ),
                 ],
-              ),
-            ),
-          ),
-        ],
+              );
+            }),
+          ],
+        ),
       ),
     );
   }
 
-  // ─── Reusable label ─────────────────────────────────────────────────
-  Widget _buildLabel(String text) {
-    return Text(
-      text,
-      style: TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-        color: Get.theme.colorScheme.onSurface.withValues(alpha: 0.7),
-        letterSpacing: 0.3,
+  Widget _nbLabel(String text, bool isDark) {
+    return Container(
+      padding: const .symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white : Colors.black,
+        border: .all(color: isDark ? Colors.white : Colors.black, width: 2),
+      ),
+      child: AppText(
+        text,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: .w900,
+          letterSpacing: 1.5,
+          color: isDark ? Colors.black : Colors.white,
+        ),
       ),
     );
   }
 
-  // ─── Reusable text field ────────────────────────────────────────────
-  Widget _buildTextField({
-    required BuildContext context,
+  Widget _nbTextField({
     required TextEditingController controller,
     required String hint,
-    required IconData icon,
+    required bool isDark,
+    required Color cardBg,
     TextInputType? keyboardType,
     TextCapitalization capitalization = TextCapitalization.none,
     List<TextInputFormatter>? formatters,
     String? prefix,
   }) {
-    final theme = context.theme;
-    final colorScheme = theme.colorScheme;
-    final isDark = Get.isDarkMode;
-
-    return TextField(
-      controller: controller,
-      keyboardType: keyboardType,
-      textCapitalization: capitalization,
-      inputFormatters: formatters,
-      style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(
-          color: colorScheme.onSurface.withValues(alpha: 0.35),
-        ),
-        prefixIcon: Container(
-          margin: const EdgeInsets.only(left: 12, right: 8),
-          child: Icon(
-            icon,
-            size: 20,
-            color: colorScheme.primary.withValues(alpha: 0.7),
+    return Container(
+      decoration: BoxDecoration(
+        color: cardBg,
+        border: .all(color: Colors.black, width: 2.5),
+        boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(4, 4))],
+      ),
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        textCapitalization: capitalization,
+        inputFormatters: formatters,
+        style: const TextStyle(fontWeight: .w900, fontSize: 16),
+        decoration: InputDecoration(
+          hintText: hint.toUpperCase(),
+          hintStyle: TextStyle(
+            color: Colors.black.withValues(alpha: 0.3),
+            fontSize: 14,
+            fontWeight: .w700,
           ),
+          prefixText: prefix,
+          prefixStyle: const TextStyle(
+            fontWeight: .w900,
+            color: _kAccentPurple,
+          ),
+          border: .none,
+          focusedBorder: .none,
+          enabledBorder: .none,
+          errorBorder: .none,
+          disabledBorder: .none,
+          contentPadding: const .symmetric(horizontal: 16, vertical: 16),
         ),
-        prefixIconConstraints: const BoxConstraints(
-          minWidth: 44,
-          minHeight: 44,
+      ),
+    );
+  }
+
+  Widget _nbTypeCard({
+    required String label,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required bool isDark,
+    required Color cardBg,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        margin: const .only(right: 8),
+        padding: const .symmetric(vertical: 20),
+        decoration: BoxDecoration(
+          color: isSelected ? _kAccentGreen : cardBg,
+          border: .all(color: Colors.black, width: 2.5),
+          boxShadow: isSelected
+              ? const [BoxShadow(color: Colors.black, offset: Offset(4, 4))]
+              : [],
         ),
-        prefixText: prefix,
-        prefixStyle: TextStyle(
-          color: colorScheme.primary,
-          fontWeight: FontWeight.w600,
-          fontSize: 15,
-        ),
-        filled: true,
-        fillColor: isDark
-            ? colorScheme.secondaryContainer.withValues(alpha: 0.2)
-            : colorScheme.secondaryContainer.withValues(alpha: 0.3),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: colorScheme.primary, width: 2),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 18,
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              color: isSelected
+                  ? Colors.white
+                  : (isDark ? Colors.white38 : Colors.black38),
+            ),
+            12.hBox,
+            AppText(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: .w900,
+                color: isSelected
+                    ? Colors.white
+                    : (isDark ? Colors.white38 : Colors.black38),
+                letterSpacing: 1,
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -14,34 +15,29 @@ import 'package:test_app/presentation/pages/bank_transaction/bank_transaction_vi
 import 'package:test_app/presentation/pages/banks/widget/card_widget.dart';
 import 'package:test_app/presentation/widgets/app_text.dart';
 
+// ── Neo Brutalism tokens ─────────────────────────────────────────────────────
+const _kBorder = BorderSide(color: Colors.black, width: 2.5);
+const _kAccentYellow = Color(0xFFFFE600);
+const _kAccentGreen = Color(0xFF00C853);
+const _kAccentRed = Color(0xFFFF1744);
+const _kAccentBlue = Color(0xFF2979FF);
+const _kAccentPurple = Color(0xFF7C4DFF);
+
 class BanksView extends GetView<BanksController> {
   const BanksView({super.key});
 
-  // ─── Helpers ────────────────────────────────────────────────────────
   Color _getTypeColor(String type) {
-    final isDark = Get.isDarkMode;
     switch (type.toLowerCase()) {
       case 'savings':
-        return isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A);
+        return _kAccentGreen;
       case 'credit':
-        return isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB);
+        return _kAccentBlue;
       case 'debit':
-        return isDark ? const Color(0xFFFB923C) : const Color(0xFFEA580C);
+        return _kAccentYellow;
+      case 'salary':
+        return _kAccentPurple;
       default:
-        return isDark ? const Color(0xFFA78BFA) : const Color(0xFF7C3AED);
-    }
-  }
-
-  IconData _getTypeIcon(String type) {
-    switch (type.toLowerCase()) {
-      case 'savings':
-        return Icons.savings_outlined;
-      case 'credit':
-        return Icons.credit_card;
-      case 'debit':
-        return Icons.account_balance_wallet_outlined;
-      default:
-        return Icons.account_balance;
+        return _kAccentPurple;
     }
   }
 
@@ -56,12 +52,9 @@ class BanksView extends GetView<BanksController> {
   // ─── Transfer Bottom Sheet ──────────────────────────────────────────
   void _showTransferSheet(BuildContext context) {
     if (controller.banks.length < 2) {
-      Get.snackbar(
+      _showErrorSnackbar(
         'Not Enough Banks',
         'You need at least 2 banks to make a transfer',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
-        borderRadius: 16,
       );
       return;
     }
@@ -69,699 +62,593 @@ class BanksView extends GetView<BanksController> {
     final amountCtrl = TextEditingController();
     final Rx<BankModel?> fromBank = Rx(null);
     final Rx<BankModel?> toBank = Rx(null);
+    final isDark = Theme.of(context).brightness == .dark;
+    final sheetBg = isDark ? const Color(0xFF1A1A1A) : Colors.white;
 
     Get.bottomSheet(
       Container(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.85,
-        ),
+        padding: const .symmetric(horizontal: 20, vertical: 24),
         decoration: BoxDecoration(
-          color: context.theme.scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          color: sheetBg,
+          border: const Border(top: _kBorder, left: _kBorder, right: _kBorder),
+          boxShadow: const [
+            BoxShadow(color: Colors.black, offset: Offset(0, -6)),
+          ],
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // ── Handle bar
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(top: 12, bottom: 8),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade400,
-                borderRadius: BorderRadius.circular(2),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: .min,
+            crossAxisAlignment: .start,
+            children: [
+              // Header
+              Container(
+                padding: const .symmetric(horizontal: 10, vertical: 4),
+                color: _kAccentPurple,
+                child: const AppText(
+                  "TRANSFER FUNDS",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: .w900,
+                    color: Colors.white,
+                    letterSpacing: 1.5,
+                  ),
+                ),
               ),
-            ),
-            // ── Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              child: Row(
+              24.hBox,
+
+              // From
+              _nbLabel("FROM ACCOUNT", isDark),
+              10.hBox,
+              SizedBox(
+                height: 90,
+                child: Obx(
+                  () => _buildBankSelector(fromBank, toBank.value, isDark),
+                ),
+              ),
+              20.hBox,
+
+              // Arrow
+              Center(
+                child: Container(
+                  padding: const .all(8),
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white : Colors.black,
+                    border: .all(
+                      color: isDark ? Colors.white : Colors.black,
+                      width: 2,
+                    ),
+                  ),
+                  child: Icon(
+                    CupertinoIcons.arrow_down,
+                    color: isDark ? Colors.black : Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ),
+              20.hBox,
+
+              // To
+              _nbLabel("TO ACCOUNT", isDark),
+              10.hBox,
+              SizedBox(
+                height: 90,
+                child: Obx(
+                  () => _buildBankSelector(toBank, fromBank.value, isDark),
+                ),
+              ),
+              24.hBox,
+
+              // Amount
+              _nbLabel("AMOUNT", isDark),
+              10.hBox,
+              Container(
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.black : Colors.white,
+                  border: .all(color: Colors.black, width: 2.5),
+                  boxShadow: const [
+                    BoxShadow(color: Colors.black, offset: Offset(4, 4)),
+                  ],
+                ),
+                child: TextField(
+                  controller: amountCtrl,
+                  keyboardType: const .numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                      RegExp(r'^\d+\.?\d{0,2}'),
+                    ),
+                  ],
+                  style: TextStyle(
+                    fontWeight: .w900,
+                    fontSize: 22,
+                    color: isDark ? Colors.white : Colors.black,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: '0.00',
+                    prefixText: '₹ ',
+                    prefixStyle: const TextStyle(
+                      fontWeight: .w900,
+                      color: _kAccentPurple,
+                    ),
+                    border: .none,
+                    contentPadding: const .all(16),
+                  ),
+                ),
+              ),
+              32.hBox,
+
+              // Buttons
+              Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.deepPurple.shade400,
-                          Colors.deepPurple.shade700,
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: const Icon(
-                      Icons.swap_horiz_rounded,
-                      color: Colors.white,
-                      size: 22,
+                  Expanded(
+                    child: _nbButton(
+                      label: "CANCEL",
+                      color: isDark ? Colors.white10 : Colors.black12,
+                      textColor: Colors.white,
+                      onTap: () => Get.back(),
                     ),
                   ),
-                  12.wBox,
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Transfer Funds",
-                        style: context.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      Text(
-                        "Move money between accounts",
-                        style: context.textTheme.bodySmall?.copyWith(
-                          color: context.theme.colorScheme.onSurface.withValues(
-                            alpha: 0.5,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: () => Get.back(),
-                    icon: Icon(
-                      Icons.close,
-                      color: context.theme.colorScheme.onSurface.withValues(
-                        alpha: 0.4,
-                      ),
+                  16.wBox,
+                  Expanded(
+                    child: _nbButton(
+                      label: "TRANSFER",
+                      color: _kAccentBlue,
+                      textColor: Colors.white,
+                      onTap: () {
+                        if (fromBank.value == null || toBank.value == null) {
+                          _showErrorSnackbar(
+                            'Select Banks',
+                            'Please select both source and destination banks',
+                          );
+                          return;
+                        }
+                        final amount = double.tryParse(amountCtrl.text) ?? 0;
+                        if (amount <= 0) {
+                          _showErrorSnackbar(
+                            'Invalid Amount',
+                            'Enter a valid transfer amount',
+                          );
+                          return;
+                        }
+                        controller.transferFunds(
+                          fromBank.value!.id!,
+                          toBank.value!.id!,
+                          amount,
+                        );
+                        Get.back();
+                      },
                     ),
                   ),
                 ],
               ),
-            ),
-            const Divider(height: 1),
-            // ── Body
-            Flexible(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // From bank
-                    Text(
-                      "From",
-                      style: context.textTheme.labelLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    8.hBox,
-                    Obx(
-                      () => _buildBankSelector(context, fromBank, toBank.value),
-                    ),
-                    20.hBox,
-                    // Swap icon
-                    Center(
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: context.theme.colorScheme.primaryContainer
-                              .withValues(alpha: 0.5),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.arrow_downward_rounded,
-                          size: 20,
-                          color: context.theme.colorScheme.primary,
-                        ),
-                      ),
-                    ),
-                    20.hBox,
-                    // To bank
-                    Text(
-                      "To",
-                      style: context.textTheme.labelLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    8.hBox,
-                    Obx(
-                      () => _buildBankSelector(context, toBank, fromBank.value),
-                    ),
-                    24.hBox,
-                    // Amount
-                    Text(
-                      "Amount",
-                      style: context.textTheme.labelLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    8.hBox,
-                    TextField(
-                      controller: amountCtrl,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                          RegExp(r'^\d+\.?\d{0,2}'),
-                        ),
-                      ],
-                      style: context.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: '0.00',
-                        prefixText: '₹ ',
-                        prefixStyle: context.textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: context.theme.colorScheme.primary,
-                        ),
-                        filled: true,
-                        fillColor: context.theme.colorScheme.secondaryContainer
-                            .withValues(alpha: 0.3),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide.none,
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(
-                            color: context.theme.colorScheme.primary,
-                            width: 2,
-                          ),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 18,
-                        ),
-                      ),
-                    ),
-                    28.hBox,
-                    // Confirm button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation: 0,
-                        ),
-                        onPressed: () {
-                          if (fromBank.value == null || toBank.value == null) {
-                            Get.snackbar(
-                              'Select Banks',
-                              'Please select both source and destination banks',
-                              snackPosition: SnackPosition.BOTTOM,
-                              margin: const EdgeInsets.all(16),
-                              borderRadius: 16,
-                            );
-                            return;
-                          }
-                          final amount = double.tryParse(amountCtrl.text) ?? 0;
-                          if (amount <= 0) {
-                            Get.snackbar(
-                              'Invalid Amount',
-                              'Enter a valid transfer amount',
-                              snackPosition: SnackPosition.BOTTOM,
-                              margin: const EdgeInsets.all(16),
-                              borderRadius: 16,
-                            );
-                            return;
-                          }
-                          controller.transferFunds(
-                            fromBank.value!.id!,
-                            toBank.value!.id!,
-                            amount,
-                          );
-                        },
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.send_rounded, size: 20),
-                            SizedBox(width: 10),
-                            Text(
-                              "Transfer Now",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    16.hBox,
-                  ],
-                ),
-              ),
-            ),
-          ],
+              MediaQuery.of(context).viewInsets.bottom.hBox,
+            ],
+          ),
         ),
       ),
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      enterBottomSheetDuration: const Duration(milliseconds: 300),
-      exitBottomSheetDuration: const Duration(milliseconds: 200),
+    );
+  }
+
+  void _showErrorSnackbar(String title, String message) {
+    Get.snackbar(
+      title,
+      message,
+      snackPosition: .TOP,
+      backgroundColor: _kAccentRed,
+      colorText: Colors.white,
+      margin: const EdgeInsets.all(16),
+      borderRadius: 0,
+      borderWidth: 2.5,
+      borderColor: Colors.black,
     );
   }
 
   Widget _buildBankSelector(
-    BuildContext context,
     Rx<BankModel?> selected,
     BankModel? excluded,
+    bool isDark,
   ) {
-    final isDark = Get.isDarkMode;
     final available = controller.banks
         .where((b) => b.id != excluded?.id)
         .toList();
-    return SizedBox(
-      height: 80,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: available.length,
-        separatorBuilder: (_, _) => 10.wBox,
-        itemBuilder: (_, i) {
-          final bank = available[i];
-          final isSelected = selected.value?.id == bank.id;
-          final typeColor = _getTypeColor(bank.type);
-          return GestureDetector(
-            onTap: () => selected.value = bank,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: 150,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? typeColor.withValues(alpha: isDark ? 0.25 : 0.1)
-                    : context.theme.cardColor,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: isSelected
-                      ? typeColor
-                      : Colors.grey.withValues(alpha: 0.2),
-                  width: isSelected ? 2 : 1,
-                ),
-                boxShadow: isSelected
-                    ? [
-                        BoxShadow(
-                          color: typeColor.withValues(alpha: 0.15),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ]
-                    : [],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Row(
-                    children: [
-                      Icon(_getTypeIcon(bank.type), size: 16, color: typeColor),
-                      6.wBox,
-                      Expanded(
-                        child: Text(
-                          bank.name,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                            color: context.theme.colorScheme.onSurface,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (isSelected)
-                        Icon(Icons.check_circle, size: 16, color: typeColor),
-                    ],
-                  ),
-                  6.hBox,
-                  Text(
-                    "₹${bank.balance.toStringAsFixed(0)}",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                      color: typeColor,
-                    ),
-                  ),
-                ],
-              ),
+    return ListView.separated(
+      scrollDirection: .horizontal,
+      itemCount: available.length,
+      separatorBuilder: (_, index) => 12.wBox,
+      itemBuilder: (_, i) {
+        final bank = available[i];
+        final isSelected = selected.value?.id == bank.id;
+        final typeColor = _getTypeColor(bank.type);
+        return GestureDetector(
+          onTap: () => selected.value = bank,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            width: 160,
+            padding: const .all(12),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? typeColor
+                  : (isDark ? const Color(0xFF2A2A2A) : Colors.white),
+              border: .all(color: Colors.black, width: 2.5),
+              boxShadow: isSelected
+                  ? const [BoxShadow(color: Colors.black, offset: Offset(3, 3))]
+                  : [],
             ),
-          );
-        },
-      ),
+            child: Column(
+              crossAxisAlignment: .start,
+              mainAxisAlignment: .center,
+              children: [
+                AppText(
+                  bank.name.toUpperCase(),
+                  style: TextStyle(
+                    fontWeight: .w900,
+                    fontSize: 12,
+                    color: isSelected
+                        ? Colors.white
+                        : (isDark ? Colors.white70 : Colors.black87),
+                  ),
+                  maxLines: 1,
+                  overflow: .ellipsis,
+                ),
+                4.hBox,
+                AppText(
+                  "₹${bank.balance.toStringAsFixed(2)}",
+                  style: TextStyle(
+                    fontWeight: .w900,
+                    fontSize: 16,
+                    color: isSelected ? Colors.white : typeColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
   // ─── Delete confirmation ────────────────────────────────────────────
   Future<void> _confirmDelete(BuildContext context, BankModel bank) async {
     final hasTx = await controller.repo.hasTransactions(bank.id!);
-    final theme = context.theme;
+    final isDark = Theme.of(context).brightness == .dark;
+    final bg = isDark ? const Color(0xFF1A1A1A) : Colors.white;
+
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          padding: const .all(24),
+          decoration: BoxDecoration(
+            color: bg,
+            border: .all(color: Colors.black, width: 2.5),
+            boxShadow: const [
+              BoxShadow(color: Colors.black, offset: Offset(6, 6)),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: .min,
+            crossAxisAlignment: .start,
+            children: [
+              Container(
+                padding: const .symmetric(horizontal: 10, vertical: 4),
+                color: _kAccentRed,
+                child: const AppText(
+                  "DELETE BANK?",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: .w900,
+                    color: Colors.white,
+                    letterSpacing: 1.5,
+                  ),
+                ),
               ),
-              child: const Icon(
-                Icons.delete_outline,
-                color: Colors.red,
-                size: 20,
+              24.hBox,
+              AppText(
+                hasTx
+                    ? "THIS BANK HAS TRANSACTIONS. DELETE ANYWAY? THIS CANNOT BE UNDONE."
+                    : "THIS BANK WILL BE PERMANENTLY DELETED.",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: .w700,
+                  color: isDark ? Colors.white : Colors.black,
+                  height: 1.5,
+                ),
               ),
-            ),
-            12.wBox,
-            const Text(
-              "Delete Bank?",
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
-            ),
-          ],
-        ),
-        content: Text(
-          hasTx
-              ? "This bank has transactions. Delete anyway?"
-              : "This bank will be permanently deleted.",
-          style: TextStyle(
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+              32.hBox,
+              Row(
+                children: [
+                  Expanded(
+                    child: _nbButton(
+                      label: "CANCEL",
+                      color: isDark ? Colors.white10 : Colors.black12,
+                      textColor: isDark ? Colors.white : Colors.black,
+                      onTap: () => Screen.close(result: false),
+                    ),
+                  ),
+                  16.wBox,
+                  Expanded(
+                    child: _nbButton(
+                      label: "DELETE",
+                      color: _kAccentRed,
+                      textColor: Colors.white,
+                      onTap: () => Screen.close(result: true),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
-        actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(
-              "Cancel",
-              style: TextStyle(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-              ),
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              minimumSize: const Size(100, 44),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text(
-              "Delete",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
       ),
     );
     if (confirm == true) await controller.deleteBank(bank.id!);
   }
 
-  // ─── Build ──────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    final theme = context.theme;
-    final colorScheme = theme.colorScheme;
-    final isDark = Get.isDarkMode;
+    final isDark = Theme.of(context).brightness == .dark;
+    final bg = isDark ? const Color(0xFF0F0F0F) : const Color(0xFFF5F5F0);
+    final cardBg = isDark ? const Color(0xFF1A1A1A) : Colors.white;
 
     return Scaffold(
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        return Column(
-          children: [
-            // ── Fixed Header (never scrolls)
-            Container(
-              padding: EdgeInsets.only(
-                top: MediaQuery.of(context).padding.top + 8,
-                bottom: 24,
-                left: 24,
-                right: 24,
-              ),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: isDark
-                      ? [const Color(0xFF1E1B4B), const Color(0xFF0F172A)]
-                      : [
-                          Colors.deepPurple.shade600,
-                          Colors.deepPurple.shade900,
-                        ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(28),
-                  bottomRight: Radius.circular(28),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.deepPurple.withValues(
-                      alpha: isDark ? 0.3 : 0.2,
-                    ),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Top bar
-                  Row(
-                    children: [
-                      const Text(
-                        "My Banks & Cards",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const Spacer(),
-                      GestureDetector(
-                        onTap: () {
-                          if (Get.isRegistered<AddBanksController>()) {
-                            Get.find<AddBanksController>().resetForAdd();
-                          }
-                          Screen.open(
-                            const AddBanksView(),
-                            binding: AddBanksBinding(),
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(
-                            Icons.add,
-                            color: Colors.white,
-                            size: 18,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  28.hBox,
-                  // Total balance
-                  Text(
-                    "Total Balance",
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.6),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  6.hBox,
-                  Text(
-                    "₹${_getTotalBalance().toStringAsFixed(2)}",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 34,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                  6.hBox,
-                  Text(
-                    "${controller.banks.length} account${controller.banks.length != 1 ? 's' : ''}",
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.5),
-                      fontSize: 13,
-                    ),
-                  ),
-                  20.hBox,
-                  // Quick actions
-                  Row(
-                    children: [
-                      _buildQuickAction(
-                        icon: Icons.swap_horiz_rounded,
-                        label: "Transfer",
-                        onTap: () => _showTransferSheet(context),
-                      ),
-                      12.wBox,
-                      _buildQuickAction(
-                        icon: Icons.add_card_rounded,
-                        label: "Add Bank",
-                        onTap: () {
-                          if (Get.isRegistered<AddBanksController>()) {
-                            Get.find<AddBanksController>().resetForAdd();
-                          }
-                          Screen.open(
-                            const AddBanksView(),
-                            binding: AddBanksBinding(),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ],
+      backgroundColor: bg,
+      appBar: AppBar(
+        backgroundColor: bg,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        toolbarHeight: 60,
+        centerTitle: true,
+        title: Padding(
+          padding: const .only(top: 8.0),
+          child: Container(
+            padding: const .symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: _kAccentYellow,
+              border: .all(color: Colors.black, width: 2.5),
+            ),
+            child: const AppText(
+              'MY BANKS',
+              style: TextStyle(
+                fontFamily: 'monospace',
+                fontSize: 16,
+                fontWeight: .w900,
+                color: Colors.black,
+                letterSpacing: 1.5,
               ),
             ),
+          ),
+        ),
+      ),
+      floatingActionButton: Padding(
+        padding: const .only(bottom: 80),
+        child: GestureDetector(
+          onTap: () {
+            if (Get.isRegistered<AddBanksController>()) {
+              Get.find<AddBanksController>().resetForAdd();
+            }
+            Screen.open(const AddBanksView(), binding: AddBanksBinding());
+          },
+          child: Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: _kAccentBlue,
+              border: .all(color: Colors.black, width: 2.5),
+              boxShadow: const [
+                BoxShadow(color: Colors.black, offset: Offset(4, 4)),
+              ],
+            ),
+            child: const Icon(
+              CupertinoIcons.add,
+              color: Colors.white,
+              size: 30,
+            ),
+          ),
+        ),
+      ),
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return const Center(child: CupertinoActivityIndicator(radius: 16));
+        }
 
-            // ── Scrollable content below
-            Expanded(
-              child: controller.banks.isEmpty
-                  ? Center(
+        return CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const .all(16.0),
+                child: Column(
+                  crossAxisAlignment: .start,
+                  children: [
+                    // Total Balance Card
+                    Container(
+                      width: double.infinity,
+                      padding: const .all(16),
+                      decoration: BoxDecoration(
+                        color: _kAccentPurple,
+                        border: .all(color: Colors.black, width: 2.5),
+                        boxShadow: const [
+                          BoxShadow(color: Colors.black, offset: Offset(6, 6)),
+                        ],
+                      ),
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: .start,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(24),
-                            decoration: BoxDecoration(
-                              color: colorScheme.primaryContainer.withValues(
-                                alpha: 0.3,
-                              ),
-                              shape: BoxShape.circle,
+                          const AppText(
+                            "TOTAL BALANCE",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: .w900,
+                              letterSpacing: 1.5,
                             ),
-                            child: Icon(
-                              Icons.account_balance_wallet_outlined,
-                              size: 56,
-                              color: colorScheme.primary.withValues(alpha: 0.5),
-                            ),
-                          ),
-                          24.hBox,
-                          AppText(
-                            "No banks or cards yet",
-                            size: 18,
-                            weight: FontWeight.w600,
-                            color: colorScheme.onSurface.withValues(alpha: 0.7),
                           ),
                           8.hBox,
                           AppText(
-                            "Tap '+' or 'Add Bank' to get started",
-                            size: 14,
-                            color: colorScheme.onSurface.withValues(alpha: 0.4),
+                            "₹${_getTotalBalance().toStringAsFixed(2)}",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 38,
+                              fontWeight: .w900,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                          12.hBox,
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            color: Colors.black,
+                            child: AppText(
+                              "${controller.banks.length} ACCOUNTS",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: .w900,
+                                letterSpacing: 1,
+                              ),
+                            ),
                           ),
                         ],
                       ),
-                    )
-                  : ListView.builder(
-                      physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
-                      itemCount:
-                          controller.banks.length + 1, // +1 for section header
-                      itemBuilder: (context, index) {
-                        // Section header
-                        if (index == 0) {
-                          return Padding(
-                            padding: const EdgeInsets.fromLTRB(8, 0, 8, 12),
-                            child: Row(
+                    ),
+                    18.hBox,
+
+                    // Quick Actions
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _nbButton(
+                            label: "TRANSFER",
+                            icon: CupertinoIcons.arrow_right_arrow_left,
+                            color: _kAccentYellow,
+                            textColor: Colors.black,
+                            onTap: () => _showTransferSheet(context),
+                          ),
+                        ),
+                        16.wBox,
+                        Expanded(
+                          child: _nbButton(
+                            label: "ADD BANK",
+                            icon: CupertinoIcons.plus_square,
+                            color: _kAccentGreen,
+                            textColor: Colors.white,
+                            onTap: () {
+                              if (Get.isRegistered<AddBanksController>()) {
+                                Get.find<AddBanksController>().resetForAdd();
+                              }
+                              Screen.open(
+                                const AddBanksView(),
+                                binding: AddBanksBinding(),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    18.hBox,
+
+                    _nbLabel("YOUR ACCOUNTS", isDark),
+                    18.hBox,
+
+                    if (controller.banks.isEmpty)
+                      _buildEmptyState(isDark, cardBg)
+                    else
+                      ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: controller.banks.length,
+                        separatorBuilder: (_, index) => 16.hBox,
+                        itemBuilder: (context, index) {
+                          final bank = controller.banks[index];
+                          final typeColor = _getTypeColor(bank.type);
+                          return Slidable(
+                            key: ValueKey(bank.id),
+                            endActionPane: ActionPane(
+                              motion: const StretchMotion(),
+                              extentRatio: 0.5,
                               children: [
-                                Text(
-                                  "Your Accounts",
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w700,
+                                CustomSlidableAction(
+                                  onPressed: (_) {
+                                    Screen.open(
+                                      const AddBanksView(),
+                                      binding: AddBanksBinding(),
+                                    );
+                                    if (Get.isRegistered<
+                                      AddBanksController
+                                    >()) {
+                                      Get.find<AddBanksController>()
+                                          .setupForEdit(bank);
+                                    }
+                                  },
+                                  backgroundColor: Colors.transparent,
+                                  child: Container(
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    decoration: BoxDecoration(
+                                      color: _kAccentBlue,
+                                      border: const Border(
+                                        top: _kBorder,
+                                        bottom: _kBorder,
+                                        left: _kBorder,
+                                      ),
+                                    ),
+                                    child: const Icon(
+                                      CupertinoIcons.pencil,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
-                                const Spacer(),
-                                Text(
-                                  "Swipe for actions →",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: colorScheme.onSurface.withValues(
-                                      alpha: 0.4,
+                                CustomSlidableAction(
+                                  onPressed: (_) =>
+                                      _confirmDelete(context, bank),
+                                  backgroundColor: Colors.transparent,
+                                  child: Container(
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    decoration: BoxDecoration(
+                                      color: _kAccentRed,
+                                      border: .all(
+                                        color: Colors.black,
+                                        width: 2.5,
+                                      ),
+                                    ),
+                                    child: const Icon(
+                                      CupertinoIcons.trash,
+                                      color: Colors.white,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                          );
-                        }
-
-                        final bank = controller.banks[index - 1];
-                        final typeColor = _getTypeColor(bank.type);
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: GestureDetector(
-                            onTap: () => Screen.open(
-                              BankTransactionView(),
-                              binding: BankTransactionBinding(bank),
-                            ),
-                            child: Slidable(
-                              key: ValueKey(bank.id),
-                              endActionPane: ActionPane(
-                                motion: const StretchMotion(),
-                                extentRatio: 0.5,
-                                children: [
-                                  SlidableAction(
-                                    flex: 1,
-                                    onPressed: (_) {
-                                      Screen.open(
-                                        const AddBanksView(),
-                                        binding: AddBanksBinding(),
-                                      );
-                                      // setupForEdit after push so the controller exists
-                                      if (Get.isRegistered<
-                                        AddBanksController
-                                      >()) {
-                                        Get.find<AddBanksController>()
-                                            .setupForEdit(bank);
-                                      }
-                                    },
-                                    backgroundColor: const Color(0xFF3B82F6),
-                                    foregroundColor: Colors.white,
-                                    icon: Icons.edit_rounded,
-                                    label: 'Edit',
-                                    borderRadius: const BorderRadius.only(
-                                      topLeft: Radius.circular(16),
-                                      bottomLeft: Radius.circular(16),
-                                    ),
-                                  ),
-                                  SlidableAction(
-                                    flex: 1,
-                                    onPressed: (_) =>
-                                        _confirmDelete(context, bank),
-                                    backgroundColor: const Color(0xFFEF4444),
-                                    foregroundColor: Colors.white,
-                                    icon: Icons.delete_outline_rounded,
-                                    label: 'Delete',
-                                    borderRadius: const BorderRadius.only(
-                                      topRight: Radius.circular(16),
-                                      bottomRight: Radius.circular(16),
-                                    ),
-                                  ),
-                                ],
+                            child: GestureDetector(
+                              onTap: () => Screen.open(
+                                BankTransactionView(),
+                                binding: BankTransactionBinding(bank),
                               ),
-                              child: Card(
-                                elevation: isDark ? 2 : 4,
-                                margin: EdgeInsets.zero,
-                                color: theme.cardColor,
-                                shadowColor: typeColor.withValues(
-                                  alpha: isDark ? 0.3 : 0.2,
-                                ),
-                                surfaceTintColor: Colors.transparent,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: cardBg,
+                                  border: .all(color: Colors.black, width: 2.5),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Colors.black,
+                                      offset: Offset(5, 5),
+                                    ),
+                                  ],
                                 ),
                                 child: CardWidget(color: typeColor, bank: bank),
                               ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
+                          );
+                        },
+                      ),
+                    100.hBox,
+                  ],
+                ),
+              ),
             ),
           ],
         );
@@ -769,32 +656,105 @@ class BanksView extends GetView<BanksController> {
     );
   }
 
-  // ─── Quick Action Chip ─────────────────────────────────────────────
-  Widget _buildQuickAction({
-    required IconData icon,
+  Widget _nbLabel(String text, bool isDark) {
+    return Container(
+      padding: const .symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white : Colors.black,
+        border: .all(color: isDark ? Colors.white : Colors.black, width: 2),
+      ),
+      child: AppText(
+        text,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: .w900,
+          letterSpacing: 1.5,
+          color: isDark ? Colors.black : Colors.white,
+        ),
+      ),
+    );
+  }
+
+  Widget _nbButton({
     required String label,
+    required Color color,
+    required Color textColor,
+    IconData? icon,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        padding: const .symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+          color: color,
+          border: .all(color: Colors.black, width: 2.5),
+          boxShadow: const [
+            BoxShadow(color: Colors.black, offset: Offset(4, 4)),
+          ],
         ),
+        alignment: .center,
         child: Row(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: .center,
           children: [
-            Icon(icon, color: Colors.white, size: 18),
-            8.wBox,
-            Text(
+            if (icon != null) ...[
+              Icon(icon, color: textColor, size: 18),
+              8.wBox,
+            ],
+            AppText(
               label,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
                 fontSize: 13,
-                fontWeight: FontWeight.w600,
+                fontWeight: .w900,
+                color: textColor,
+                letterSpacing: 1,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(bool isDark, Color cardBg) {
+    return Center(
+      child: Padding(
+        padding: const .symmetric(vertical: 40),
+        child: Column(
+          children: [
+            Container(
+              padding: const .all(24),
+              decoration: BoxDecoration(
+                color: cardBg,
+                border: .all(color: Colors.black, width: 2.5),
+                boxShadow: const [
+                  BoxShadow(color: Colors.black, offset: Offset(6, 6)),
+                ],
+              ),
+              child: Icon(
+                CupertinoIcons.briefcase,
+                size: 50,
+                color: isDark ? Colors.white54 : Colors.black45,
+              ),
+            ),
+            24.hBox,
+            AppText(
+              "NO BANKS OR CARDS YET",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: .w900,
+                color: isDark ? Colors.white54 : Colors.black54,
+                letterSpacing: 1,
+              ),
+            ),
+            8.hBox,
+            AppText(
+              "TAP '+' TO GET STARTED",
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: .w700,
+                color: isDark ? Colors.white38 : Colors.black38,
+                letterSpacing: 0.5,
               ),
             ),
           ],

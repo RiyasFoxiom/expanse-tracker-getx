@@ -1,8 +1,7 @@
-
 class BankModel {
   int? id;
   late String name;
-  late String type; // 'savings', 'credit', 'debit'
+  late String type; // 'savings', 'credit', 'debit', 'salary'
   late String cardNumber; // New field
   late double balance;
   late DateTime createdAt;
@@ -38,7 +37,9 @@ class BankModel {
       cardNumber: map['card_number'] ?? '',
       balance: map['balance'],
       createdAt: DateTime.parse(map['created_at']),
-      updatedAt: map['updated_at'] != null ? DateTime.parse(map['updated_at']) : null,
+      updatedAt: map['updated_at'] != null
+          ? DateTime.parse(map['updated_at'])
+          : null,
     );
   }
 }

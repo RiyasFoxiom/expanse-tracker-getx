@@ -123,7 +123,7 @@ class HomeController extends GetxController {
       PieChartSectionData(
         value: income,
         color: const Color(0xff4CAF50), // Green for income
-        title: '${((income / total) * 100).toStringAsFixed(0)}%',
+        title: '${((income / total) * 100).toStringAsFixed(2)}%',
         radius: 50,
         titleStyle: const TextStyle(
           fontSize: 16,
@@ -134,7 +134,7 @@ class HomeController extends GetxController {
       PieChartSectionData(
         value: expense,
         color: const Color(0xffF44336), // Red for expense
-        title: '${((expense / total) * 100).toStringAsFixed(0)}%',
+        title: '${((expense / total) * 100).toStringAsFixed(2)}%',
         radius: 50,
         titleStyle: const TextStyle(
           fontSize: 16,
@@ -147,7 +147,7 @@ class HomeController extends GetxController {
 
   // Optional: Center text showing total or balance
   String get centerChartText =>
-      "Balance\n₹${totalBalance.value.toStringAsFixed(0)}";
+      "Balance\n₹${totalBalance.value.toStringAsFixed(2)}";
 
   /// Returns a list of daily totals for the last 7 days.
   /// Each item in the list is a Map containing 'date', 'income', and 'expense'.

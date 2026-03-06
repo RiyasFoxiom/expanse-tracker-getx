@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:test_app/core/extensions/space_ext.dart';
@@ -10,55 +11,203 @@ import 'package:test_app/presentation/pages/add_category/add_category_view.dart'
 import 'package:test_app/presentation/pages/categories_chart/categories_chart_view.dart';
 import 'package:test_app/presentation/widgets/app_text.dart';
 
+// ── Neo Brutalism tokens ─────────────────────────────────────────────────────
+const _kBorder = BorderSide(color: Colors.black, width: 2.5);
+const _kAccentYellow = Color(0xFFFFE600);
+const _kAccentGreen = Color(0xFF00C853);
+const _kAccentRed = Color(0xFFFF1744);
+const _kAccentBlue = Color(0xFF2979FF);
+const _kAccentPurple = Color(0xFF7C4DFF);
+
 class CategoriesView extends GetView<CategoriesController> {
   const CategoriesView({super.key});
 
-  // ── Helpers ──────────────────────────────────────────────────────────
   int get _incomeCount =>
       controller.categories.where((c) => c.type == 'income').length;
-
   int get _expenseCount =>
       controller.categories.where((c) => c.type == 'expense').length;
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.theme;
-    final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == .dark;
+    final bg = isDark ? const Color(0xFF0F0F0F) : const Color(0xFFF5F5F0);
+    final cardBg = isDark ? const Color(0xFF1A1A1A) : Colors.white;
 
     return Scaffold(
+      backgroundColor: bg,
+      appBar: AppBar(
+        backgroundColor: bg,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        toolbarHeight: 60,
+        centerTitle: false,
+        title: Padding(
+          padding: const .only(top: 8.0),
+          child: Container(
+            padding: const .symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: _kAccentYellow,
+              border: .all(color: Colors.black, width: 2.5),
+            ),
+            child: const AppText(
+              'CATEGORIES',
+              style: TextStyle(
+                fontFamily: 'monospace',
+                fontSize: 16,
+                fontWeight: .w900,
+                color: Colors.black,
+                letterSpacing: 1.5,
+              ),
+            ),
+          ),
+        ),
+        actions: [
+          Padding(
+            padding: const .only(top: 8.0, right: 16.0),
+            child: GestureDetector(
+              onTap: () {
+                Screen.open(
+                  const CategoriesChartView(),
+                  binding: CategoriesChartBinding(),
+                );
+              },
+              child: Container(
+                padding: const .symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: _kAccentPurple,
+                  border: .all(color: Colors.black, width: 2.5),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black,
+                      offset: Offset(3, 3),
+                      blurRadius: 0,
+                    ),
+                  ],
+                ),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.pie_chart_rounded,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                    SizedBox(width: 8),
+                    AppText(
+                      'CHART',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: .w900,
+                        color: Colors.white,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 100),
-        child: FloatingActionButton(
-          onPressed: () {
+        padding: const .only(bottom: 80),
+        child: GestureDetector(
+          onTap: () {
             final addCtrl = Get.find<AddCategoryController>();
             addCtrl.clearEditing();
-            Screen.open(AddCategoryView(), binding: AddCategoryBinding());
+            Screen.open(const AddCategoryView(), binding: AddCategoryBinding());
           },
-          backgroundColor: colorScheme.primary,
-          foregroundColor: Colors.white,
-          elevation: 6,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+          child: Container(
+            width: 60,
+            height: 60,
+            decoration: const BoxDecoration(
+              color: _kAccentBlue,
+              border: .fromBorderSide(_kBorder),
+              boxShadow: [BoxShadow(color: Colors.black, offset: Offset(4, 4))],
+            ),
+            child: const Icon(Icons.add, color: Colors.white, size: 32),
           ),
-          child: const Icon(Icons.add_rounded, size: 28),
         ),
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: CupertinoActivityIndicator(radius: 16));
         }
 
-        return Column(
-          children: [
-            // ── Fixed gradient header ────────────────────────────────
-            _buildHeader(context, isDark, colorScheme),
-
-            // ── Scrollable content ───────────────────────────────────
-            Expanded(
-              child: controller.categories.isEmpty
-                  ? _buildEmptyState(colorScheme)
-                  : _buildCategoryList(context, theme, colorScheme, isDark),
+        return CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const .symmetric(horizontal: 16, vertical: 16),
+                child: Column(
+                  crossAxisAlignment: .start,
+                  children: [
+                    // Stats Header Row
+                    Row(
+                      children: [
+                        _buildStatPill(
+                          icon: CupertinoIcons.arrow_down_left,
+                          label: "$_incomeCount INCOME",
+                          color: _kAccentGreen,
+                        ),
+                        12.wBox,
+                        _buildStatPill(
+                          icon: CupertinoIcons.arrow_up_right,
+                          label: "$_expenseCount EXPENSE",
+                          color: _kAccentRed,
+                        ),
+                        const Spacer(),
+                        AppText(
+                          "${controller.categories.length} TOTAL",
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: .w900,
+                            color: isDark ? Colors.white54 : Colors.black54,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+                    24.hBox,
+                    if (controller.categories.isEmpty)
+                      _buildEmptyState(isDark, cardBg)
+                    else
+                      Container(
+                        decoration: BoxDecoration(
+                          color: cardBg,
+                          border: const .fromBorderSide(_kBorder),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black,
+                              offset: Offset(5, 5),
+                              blurRadius: 0,
+                            ),
+                          ],
+                        ),
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          padding: .zero,
+                          itemCount: controller.categories.length,
+                          separatorBuilder: (context, index) =>
+                              Container(height: 2.5, color: Colors.black),
+                          itemBuilder: (context, index) {
+                            final category = controller.categories[index];
+                            return _buildCategoryRow(
+                              context,
+                              category,
+                              isDark,
+                              cardBg,
+                            );
+                          },
+                        ),
+                      ),
+                    120.hBox,
+                  ],
+                ),
+              ),
             ),
           ],
         );
@@ -66,148 +215,30 @@ class CategoriesView extends GetView<CategoriesController> {
     );
   }
 
-  // ─── Header ─────────────────────────────────────────────────────────
-  Widget _buildHeader(
-    BuildContext context,
-    bool isDark,
-    ColorScheme colorScheme,
-  ) {
-    return Container(
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 8,
-        bottom: 24,
-        left: 24,
-        right: 24,
-      ),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isDark
-              ? [const Color(0xFF1E1B4B), const Color(0xFF0F172A)]
-              : [Colors.deepPurple.shade600, Colors.deepPurple.shade900],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(28),
-          bottomRight: Radius.circular(28),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.deepPurple.withValues(alpha: isDark ? 0.3 : 0.2),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Title row
-          Row(
-            children: [
-              const Text(
-                "Categories",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const Spacer(),
-              // Chart button
-              GestureDetector(
-                onTap: () => Screen.open(
-                  CategoriesChartView(),
-                  binding: CategoriesChartBinding(),
-                ),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.2),
-                    ),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.pie_chart_rounded,
-                        color: Colors.white,
-                        size: 16,
-                      ),
-                      SizedBox(width: 6),
-                      Text(
-                        "Chart",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          20.hBox,
-          // Stats row
-          Row(
-            children: [
-              _buildStatPill(
-                icon: Icons.arrow_downward_rounded,
-                label: "$_incomeCount Income",
-                color: const Color(0xFF4ADE80),
-              ),
-              12.wBox,
-              _buildStatPill(
-                icon: Icons.arrow_upward_rounded,
-                label: "$_expenseCount Expense",
-                color: const Color(0xFFFB7185),
-              ),
-              const Spacer(),
-              Text(
-                "${controller.categories.length} total",
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.5),
-                  fontSize: 13,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
+  // ── Stat Pill ─────────────────────────────────────────────────────────────
   Widget _buildStatPill({
     required IconData icon,
     required String label,
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      padding: const .symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        color: color,
+        border: .all(color: Colors.black, width: 2),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: .min,
         children: [
-          Icon(icon, color: color, size: 14),
+          Icon(icon, color: Colors.white, size: 14),
           6.wBox,
-          Text(
+          AppText(
             label,
-            style: TextStyle(
-              color: color,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 11,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1,
             ),
           ),
         ],
@@ -215,309 +246,282 @@ class CategoriesView extends GetView<CategoriesController> {
     );
   }
 
-  // ─── Empty State ────────────────────────────────────────────────────
-  Widget _buildEmptyState(ColorScheme colorScheme) {
+  // ── Empty State ────────────────────────────────────────────────────────────
+  Widget _buildEmptyState(bool isDark, Color cardBg) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withValues(alpha: 0.3),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.category_rounded,
-              size: 56,
-              color: colorScheme.primary.withValues(alpha: 0.5),
-            ),
-          ),
-          24.hBox,
-          AppText(
-            "No categories yet",
-            size: 18,
-            weight: FontWeight.w600,
-            color: colorScheme.onSurface.withValues(alpha: 0.7),
-          ),
-          8.hBox,
-          AppText(
-            "Tap + to create your first category",
-            size: 14,
-            color: colorScheme.onSurface.withValues(alpha: 0.4),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ─── Category List ──────────────────────────────────────────────────
-  Widget _buildCategoryList(
-    BuildContext context,
-    ThemeData theme,
-    ColorScheme colorScheme,
-    bool isDark,
-  ) {
-    return ListView.builder(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 120),
-      itemCount: controller.categories.length,
-      itemBuilder: (context, index) {
-        final category = controller.categories[index];
-        final isIncome = category.type == 'income';
-
-        final Color typeColor = isIncome
-            ? const Color(0xFF22C55E)
-            : const Color(0xFFEF4444);
-        final Color softBg = typeColor.withValues(alpha: isDark ? 0.12 : 0.06);
-
-        return Dismissible(
-          key: Key(category.id.toString()),
-          direction: DismissDirection.endToStart,
-          dismissThresholds: const {DismissDirection.endToStart: 0.4},
-          confirmDismiss: (_) async {
-            return category.id != null
-                ? await _showDeleteDialog(context, category.id!)
-                : false;
-          },
-          background: Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.red.shade400, Colors.red.shade700],
-              ),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            alignment: Alignment.centerRight,
-            padding: const EdgeInsets.only(right: 28),
-            child: const Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.delete_outline_rounded,
-                  color: Colors.white,
-                  size: 26,
-                ),
-                SizedBox(height: 4),
-                Text(
-                  "Delete",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(
-              color: theme.cardColor,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.06)
-                    : Colors.black.withValues(alpha: 0.04),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: typeColor.withValues(alpha: isDark ? 0.08 : 0.06),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Material(
-              color: Colors.transparent,
-              borderRadius: BorderRadius.circular(20),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(20),
-                onTap: () {
-                  final addCtrl = Get.find<AddCategoryController>();
-                  addCtrl.setEditingCategory(category);
-                  Screen.open(AddCategoryView(), binding: AddCategoryBinding());
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 16,
-                  ),
-                  child: Row(
-                    children: [
-                      // Icon container
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: softBg,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Icon(
-                          isIncome
-                              ? Icons.trending_down_rounded
-                              : Icons.trending_up_rounded,
-                          color: typeColor,
-                          size: 24,
-                        ),
-                      ),
-                      16.wBox,
-                      // Name + type
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              category.name.capitalizeFirst ?? category.name,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: colorScheme.onSurface,
-                              ),
-                            ),
-                            4.hBox,
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 3,
-                              ),
-                              decoration: BoxDecoration(
-                                color: typeColor.withValues(
-                                  alpha: isDark ? 0.18 : 0.1,
-                                ),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                isIncome ? 'Income' : 'Expense',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: typeColor,
-                                  letterSpacing: 0.3,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Edit button
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: colorScheme.onSurface.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Icon(
-                          Icons.edit_rounded,
-                          size: 18,
-                          color: colorScheme.onSurface.withValues(alpha: 0.4),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  // ─── Delete Dialog ──────────────────────────────────────────────────
-  Future<bool?> _showDeleteDialog(BuildContext context, int id) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
-
-    return showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        backgroundColor: theme.cardColor,
-        title: Row(
+      child: Padding(
+        padding: const .symmetric(vertical: 40),
+        child: Column(
+          mainAxisAlignment: .center,
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const .all(20),
               decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
+                color: cardBg,
+                border: .all(color: Colors.black, width: 2.5),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black,
+                    offset: Offset(5, 5),
+                    blurRadius: 0,
+                  ),
+                ],
               ),
-              child: const Icon(
-                Icons.delete_outline_rounded,
-                color: Colors.red,
-                size: 22,
+              child: Icon(
+                CupertinoIcons.square_grid_2x2,
+                size: 50,
+                color: isDark ? Colors.white54 : Colors.black54,
               ),
             ),
-            12.wBox,
-            Text(
-              "Delete Category",
+            16.hBox,
+            AppText(
+              'NO CATEGORIES YET.',
+              align: .center,
               style: TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 18,
-                color: colorScheme.onSurface,
+                fontWeight: .w900,
+                fontSize: 14,
+                letterSpacing: 1,
+                color: isDark ? Colors.white54 : Colors.black45,
+              ),
+            ),
+            8.hBox,
+            AppText(
+              'TAP + TO CREATE ONE.',
+              align: .center,
+              style: TextStyle(
+                fontWeight: .w700,
+                fontSize: 12,
+                letterSpacing: 0.5,
+                color: isDark ? Colors.white54 : Colors.black45,
               ),
             ),
           ],
         ),
-        content: Text(
-          "Are you sure you want to delete this category?\nThis action cannot be undone.",
-          style: TextStyle(
-            color: colorScheme.onSurface.withValues(alpha: 0.7),
-            fontSize: 14,
-            height: 1.5,
-          ),
-        ),
-        actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-        actions: [
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => Navigator.pop(ctx, false),
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(0, 46),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    side: BorderSide(
-                      color: isDark ? Colors.white24 : Colors.black12,
+      ),
+    );
+  }
+
+  // ── Category Row ───────────────────────────────────────────────────────────
+  Widget _buildCategoryRow(
+    BuildContext context,
+    dynamic category,
+    bool isDark,
+    Color cardBg,
+  ) {
+    final isIncome = category.type == 'income';
+    final accentColor = isIncome ? _kAccentGreen : _kAccentRed;
+
+    return Dismissible(
+      key: ValueKey(category.id),
+      direction: .endToStart,
+      confirmDismiss: (_) async {
+        return category.id != null
+            ? await _showDeleteDialog(context, category.id!)
+            : false;
+      },
+      background: Container(
+        padding: const .only(right: 20),
+        alignment: .centerRight,
+        color: _kAccentRed,
+        child: const Icon(CupertinoIcons.trash, color: Colors.white, size: 24),
+      ),
+      child: Container(
+        padding: const .symmetric(horizontal: 14, vertical: 14),
+        color: cardBg,
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              color: accentColor,
+              child: Icon(
+                isIncome
+                    ? CupertinoIcons.arrow_down_left
+                    : CupertinoIcons.arrow_up_right,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+            12.wBox,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: .start,
+                children: [
+                  AppText(
+                    category.name.toString().toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: .w900,
+                      letterSpacing: 0.5,
+                      color: isDark ? Colors.white : Colors.black,
                     ),
                   ),
-                  child: Text(
-                    "Cancel",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: colorScheme.onSurface.withValues(alpha: 0.7),
+                  4.hBox,
+                  Container(
+                    padding: const .symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.white10 : Colors.black12,
+                      border: .all(
+                        color: isDark ? Colors.white30 : Colors.black26,
+                        width: 1.5,
+                      ),
                     ),
+                    child: AppText(
+                      isIncome ? 'INCOME' : 'EXPENSE',
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: .w900,
+                        color: accentColor,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                final addCtrl = Get.find<AddCategoryController>();
+                addCtrl.setEditingCategory(category);
+                Screen.open(
+                  const AddCategoryView(),
+                  binding: AddCategoryBinding(),
+                );
+              },
+              child: Container(
+                padding: const .all(8),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+                child: Icon(
+                  Icons.edit_rounded,
+                  size: 20,
+                  color: isDark ? Colors.black : Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Delete Dialog ──────────────────────────────────────────────────────────
+  Future<bool?> _showDeleteDialog(BuildContext context, int id) {
+    final isDark = Theme.of(context).brightness == .dark;
+    final bg = isDark ? const Color(0xFF1A1A1A) : Colors.white;
+
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const .all(24),
+        child: Container(
+          padding: const .all(24),
+          decoration: BoxDecoration(
+            color: bg,
+            border: .all(color: Colors.black, width: 2.5),
+            boxShadow: const [
+              BoxShadow(color: Colors.black, offset: Offset(6, 6)),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: .min,
+            crossAxisAlignment: .start,
+            children: [
+              Container(
+                padding: const .symmetric(horizontal: 10, vertical: 4),
+                color: _kAccentRed,
+                child: const AppText(
+                  "DELETE CATEGORY",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: .w900,
+                    color: Colors.white,
+                    letterSpacing: 1.5,
                   ),
                 ),
               ),
-              12.wBox,
-              Expanded(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFEF4444),
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size(0, 46),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 0,
-                  ),
-                  onPressed: () {
-                    Get.find<AddCategoryController>().deleteCategory(id);
-                    Screen.close(result: true);
-                  },
-                  child: const Text(
-                    "Delete",
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
+              24.hBox,
+              AppText(
+                "ARE YOU SURE YOU WANT TO DELETE THIS CATEGORY? THIS ACTION CANNOT BE UNDONE.",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: .w700,
+                  color: isDark ? Colors.white : Colors.black,
+                  height: 1.5,
                 ),
+              ),
+              32.hBox,
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => Screen.close(result: false),
+                      child: Container(
+                        padding: const .symmetric(vertical: 14),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.grey.shade800
+                              : Colors.grey.shade300,
+                          border: .all(color: Colors.black, width: 2.5),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black,
+                              offset: Offset(3, 3),
+                            ),
+                          ],
+                        ),
+                        alignment: Alignment.center,
+                        child: AppText(
+                          "CANCEL",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: .w900,
+                            color: isDark ? Colors.white : Colors.black,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  16.wBox,
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        Get.find<AddCategoryController>().deleteCategory(id);
+                        Screen.close(result: true);
+                      },
+                      child: Container(
+                        padding: const .symmetric(vertical: 14),
+                        decoration: BoxDecoration(
+                          color: _kAccentRed,
+                          border: .all(color: Colors.black, width: 2.5),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black,
+                              offset: Offset(3, 3),
+                            ),
+                          ],
+                        ),
+                        alignment: .center,
+                        child: const AppText(
+                          "DELETE",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: .w900,
+                            color: Colors.white,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
