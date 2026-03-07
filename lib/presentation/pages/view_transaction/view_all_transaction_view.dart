@@ -31,24 +31,8 @@ class ViewAllTransactionView extends GetView<ViewAllTransactionController> {
         elevation: 0,
         scrolledUnderElevation: 0,
         toolbarHeight: 60,
-        centerTitle: false,
-        leading: GestureDetector(
-          onTap: () => Screen.close(),
-          child: Container(
-            margin: const .only(left: 16, top: 10, bottom: 10),
-            decoration: BoxDecoration(
-              color: isDark ? Colors.white : Colors.black,
-              border: .all(
-                color: isDark ? Colors.white : Colors.black,
-                width: 2,
-              ),
-            ),
-            child: Icon(
-              CupertinoIcons.back,
-              color: isDark ? Colors.black : Colors.white,
-            ),
-          ),
-        ),
+        centerTitle: true,
+        // leading: ... REMOVED, now a primary tab in LandingView
         title: Padding(
           padding: const .only(top: 8.0),
           child: Container(

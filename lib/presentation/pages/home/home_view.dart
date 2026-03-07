@@ -6,11 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:test_app/core/extensions/space_ext.dart';
 import 'package:test_app/core/helpers/screen_helper.dart';
 import 'package:test_app/data/models/transaction_model.dart';
-import 'package:test_app/presentation/bindings/add_transaction/add_transaction_binding.dart';
-import 'package:test_app/presentation/bindings/view_all_transaction/view_all_transaction_binding.dart';
 import 'package:test_app/presentation/controllers/home/home_controller.dart';
-import 'package:test_app/presentation/pages/add_transaction/add_transaction_view.dart';
-import 'package:test_app/presentation/pages/view_transaction/view_all_transaction_view.dart';
 import 'package:test_app/presentation/widgets/app_text.dart';
 
 // ── Neo Brutalism Design Tokens ─────────────────────────────────────────────
@@ -19,7 +15,6 @@ const _kBorder = BorderSide(color: Colors.black, width: 2.5);
 const _kAccentYellow = Color(0xFFFFE600);
 const _kAccentGreen = Color(0xFF00C853);
 const _kAccentRed = Color(0xFFFF1744);
-const _kAccentBlue = Color(0xFF2979FF);
 
 class HomeView extends GetView<HomeController> {
   const HomeView({super.key});
@@ -105,37 +100,7 @@ class HomeView extends GetView<HomeController> {
           ),
         ],
       ),
-      floatingActionButton: Padding(
-        padding: const .only(bottom: 80),
-        child: GestureDetector(
-          onTap: () {
-            Screen.open(
-              const AddTransactionView(),
-              binding: AddTransactionBinding(),
-            );
-          },
-          child: Container(
-            width: 60,
-            height: 60,
-            decoration: const BoxDecoration(
-              color: _kAccentYellow,
-              border: .fromBorderSide(_kBorder),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black,
-                  offset: Offset(4, 4),
-                  blurRadius: 0,
-                ),
-              ],
-            ),
-            child: const Icon(
-              CupertinoIcons.plus,
-              size: 28,
-              color: Colors.black,
-            ),
-          ),
-        ),
-      ),
+      // floatingActionButton: ... REMOVED, now in LandingView
       body: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(
           parent: BouncingScrollPhysics(),
@@ -189,41 +154,8 @@ class HomeView extends GetView<HomeController> {
 
               // Recent Transactions
               Row(
-                mainAxisAlignment: .spaceBetween,
-                children: [
-                  _nbLabel('RECENT', isDark),
-                  GestureDetector(
-                    onTap: () {
-                      Screen.open(
-                        const ViewAllTransactionView(),
-                        binding: ViewAllTransactionBinding(),
-                      );
-                    },
-                    child: Container(
-                      padding: const .symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: _kAccentBlue,
-                        border: .all(color: Colors.black, width: 2),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black,
-                            offset: Offset(2, 2),
-                            blurRadius: 0,
-                          ),
-                        ],
-                      ),
-                      child: const AppText(
-                        'SEE ALL →',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: .w900,
-                          color: Colors.white,
-                          letterSpacing: 1,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                children: [_nbLabel('RECENT', isDark)],
+                // SEE ALL button REMOVED, now in LandingView tab
               ),
               14.hBox,
 

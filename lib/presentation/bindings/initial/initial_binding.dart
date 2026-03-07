@@ -17,6 +17,7 @@ import 'package:test_app/presentation/controllers/home/home_controller.dart';
 import 'package:test_app/presentation/controllers/landing/landing_controller.dart';
 import 'package:test_app/presentation/controllers/profile/profile_controller.dart';
 import 'package:test_app/presentation/controllers/splash/splash_controller.dart';
+import 'package:test_app/presentation/controllers/transactions/transactions_controller.dart';
 import 'package:test_app/core/services/local_auth_service.dart';
 
 class InitialBinding implements Bindings {
@@ -49,6 +50,7 @@ class InitialBinding implements Bindings {
     Get.lazyPut(() => AddTransactionController());
 
     Get.lazyPut(() => HomeController(), fenix: true);
+    Get.lazyPut(() => TransactionsController(), fenix: true);
     Get.lazyPut(() => BanksController(), fenix: true);
     Get.lazyPut(() => AddBanksController());
     Get.put<ProfileController>(ProfileController(), permanent: true);
