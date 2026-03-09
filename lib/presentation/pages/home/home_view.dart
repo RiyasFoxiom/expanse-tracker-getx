@@ -7,6 +7,7 @@ import 'package:test_app/core/extensions/space_ext.dart';
 import 'package:test_app/core/helpers/screen_helper.dart';
 import 'package:test_app/data/models/transaction_model.dart';
 import 'package:test_app/presentation/controllers/home/home_controller.dart';
+import 'package:test_app/presentation/widgets/app_dialogs.dart';
 import 'package:test_app/presentation/widgets/app_text.dart';
 
 // ── Neo Brutalism Design Tokens ─────────────────────────────────────────────
@@ -449,33 +450,72 @@ class HomeView extends GetView<HomeController> {
       return const SizedBox.shrink();
     }
 
-    final maxY =
-        (controller.totalIncome.value > controller.totalExpense.value
-            ? controller.totalIncome.value
-            : controller.totalExpense.value) *
-        1.2;
+    final weeklyData = controller.getLast7DaysData();
+    double currentMax = 0;
+    for (var day in weeklyData) {
+      if ((day['income'] as double) > currentMax)
+        currentMax = day['income'] as double;
+      if ((day['expense'] as double) > currentMax)
+        currentMax = day['expense'] as double;
+    }
+    final maxY = currentMax == 0 ? 100.0 : currentMax * 1.3;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: cardBg,
-        border: const .fromBorderSide(_kBorder),
+        border: const Border.fromBorderSide(_kBorder),
         boxShadow: const [
           BoxShadow(color: Colors.black, offset: Offset(5, 5), blurRadius: 0),
         ],
       ),
       child: Column(
-        crossAxisAlignment: .start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _nbLabel('7-DAY ACTIVITY', isDark),
           20.hBox,
           SizedBox(
-            height: 200,
+            height: 220,
             child: BarChart(
               BarChartData(
-                alignment: .spaceAround,
-                maxY: maxY == 0 ? 100 : maxY,
-                barTouchData: BarTouchData(enabled: false),
+                alignment: BarChartAlignment.spaceAround,
+                maxY: maxY,
+                barTouchData: BarTouchData(
+                  enabled: true,
+                  touchTooltipData: BarTouchTooltipData(
+                    getTooltipColor: (_) =>
+                        isDark ? Colors.black : Colors.white,
+                    tooltipBorder: const BorderSide(
+                      color: Colors.black,
+                      width: 2,
+                    ),
+                    tooltipPadding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      final isIncome = rodIndex == 0;
+                      return BarTooltipItem(
+                        '${isIncome ? "INCOME" : "EXPENSE"}\n',
+                        TextStyle(
+                          color: isDark ? Colors.white70 : Colors.black54,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 10,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: '₹${rod.toY.toStringAsFixed(0)}',
+                            style: TextStyle(
+                              color: isIncome ? _kAccentGreen : _kAccentRed,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
                 titlesData: FlTitlesData(
                   show: true,
                   bottomTitles: AxisTitles(
@@ -483,18 +523,17 @@ class HomeView extends GetView<HomeController> {
                       showTitles: true,
                       getTitlesWidget: (double value, TitleMeta meta) {
                         const style = TextStyle(
-                          fontWeight: .w800,
+                          fontWeight: FontWeight.w800,
                           fontSize: 11,
                         );
                         int index = value.toInt();
-                        final data = controller.getLast7DaysData();
-                        if (index < 0 || index >= data.length) {
+                        if (index < 0 || index >= weeklyData.length) {
                           return const SizedBox.shrink();
                         }
                         return Padding(
-                          padding: const EdgeInsets.only(top: 6.0),
+                          padding: const EdgeInsets.only(top: 8.0),
                           child: Text(
-                            data[index]['label'],
+                            weeklyData[index]['label'],
                             style: style.copyWith(
                               color: isDark ? Colors.white54 : Colors.black54,
                             ),
@@ -503,8 +542,24 @@ class HomeView extends GetView<HomeController> {
                       },
                     ),
                   ),
-                  leftTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 40,
+                      getTitlesWidget: (value, meta) {
+                        if (value == 0) return const SizedBox.shrink();
+                        return AppText(
+                          value >= 1000
+                              ? '${(value / 1000).toStringAsFixed(1)}K'
+                              : value.toStringAsFixed(0),
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w900,
+                            color: isDark ? Colors.white38 : Colors.black38,
+                          ),
+                        );
+                      },
+                    ),
                   ),
                   topTitles: const AxisTitles(
                     sideTitles: SideTitles(showTitles: false),
@@ -523,9 +578,7 @@ class HomeView extends GetView<HomeController> {
                   ),
                 ),
                 borderData: FlBorderData(show: false),
-                barGroups: controller.getLast7DaysData().asMap().entries.map((
-                  entry,
-                ) {
+                barGroups: weeklyData.asMap().entries.map((entry) {
                   int index = entry.key;
                   Map<String, dynamic> dayData = entry.value;
 
@@ -536,14 +589,22 @@ class HomeView extends GetView<HomeController> {
                       BarChartRodData(
                         toY: dayData['income'] as double,
                         color: _kAccentGreen,
-                        width: 10,
+                        width: 12,
                         borderRadius: BorderRadius.zero,
+                        borderSide: const BorderSide(
+                          color: Colors.black,
+                          width: 1,
+                        ),
                       ),
                       BarChartRodData(
                         toY: dayData['expense'] as double,
                         color: _kAccentRed,
-                        width: 10,
+                        width: 12,
                         borderRadius: BorderRadius.zero,
+                        borderSide: const BorderSide(
+                          color: Colors.black,
+                          width: 1,
+                        ),
                       ),
                     ],
                   );
@@ -596,26 +657,10 @@ class HomeView extends GetView<HomeController> {
       key: ValueKey(tx.id),
       direction: .endToStart,
       confirmDismiss: (direction) async {
-        return await showCupertinoDialog<bool>(
-          context: context,
-          builder: (context) => CupertinoAlertDialog(
-            title: const AppText("Delete Transaction"),
-            content: const AppText(
-              "Are you sure you want to delete this transaction?",
-            ),
-            actions: [
-              CupertinoDialogAction(
-                isDefaultAction: true,
-                onPressed: () => Screen.close(result: false),
-                child: const AppText("Cancel"),
-              ),
-              CupertinoDialogAction(
-                isDestructiveAction: true,
-                onPressed: () => Screen.close(result: true),
-                child: const AppText("Delete"),
-              ),
-            ],
-          ),
+        return await AppDialogs.showConfirmDialog(
+          title: "DELETE TRANSACTION",
+          content: "ARE YOU SURE YOU WANT TO DELETE THIS TRANSACTION?",
+          isDestructive: true,
         );
       },
       onDismissed: (direction) {
