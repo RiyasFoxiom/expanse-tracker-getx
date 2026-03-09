@@ -1,11 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:test_app/core/extensions/space_ext.dart';
-import 'package:test_app/core/helpers/screen_helper.dart';
-import 'package:test_app/presentation/bindings/add_transaction/add_transaction_binding.dart';
 import 'package:test_app/presentation/controllers/landing/landing_controller.dart';
-import 'package:test_app/presentation/pages/add_transaction/add_transaction_view.dart';
 import 'package:test_app/presentation/pages/banks/banks_view.dart';
 import 'package:test_app/presentation/pages/category/categories_view.dart';
 import 'package:test_app/presentation/pages/home/home_view.dart';
@@ -48,7 +44,7 @@ class LandingView extends StatelessWidget {
             ),
           ),
         ),
-        
+
         bottomNavigationBar: const _NeoBrutalistBottomNav(),
       ),
     );
