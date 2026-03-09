@@ -56,6 +56,9 @@ class AddTransactionController extends GetxController {
       isLoading.value = true;
       final allBanks = await _bankRepository.getAllBanks();
       banks.value = allBanks;
+      if (banks.length == 1) {
+        selectedBank.value = banks.first;
+      }
     } catch (e) {
       Get.snackbar('Error', 'Failed to load banks: $e');
     } finally {
@@ -135,12 +138,11 @@ class AddTransactionController extends GetxController {
 
       Get.snackbar('Success', 'Transaction saved successfully');
 
-      // Clear form
+      // Clear only amount and category as requested
       amountController.clear();
       notesController.clear();
-      selectedDate.value = null;
       selectedCategory.value = null;
-      selectedBank.value = null;
+      // selectedDate and selectedBank are kept to allow fast multiple entries
 
       if (Get.isRegistered<HomeController>()) {
         Get.find<HomeController>().getAllTransactions();

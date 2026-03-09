@@ -40,7 +40,11 @@ class TransactionsController extends GetxController {
       isLoading.value = true;
       final result = await _repository.getAllTransactions();
 
-      result.sort((a, b) => b.date.compareTo(a.date)); // Default newest
+      result.sort((a, b) {
+        int cmp = b.date.compareTo(a.date);
+        if (cmp != 0) return cmp;
+        return b.createdAt.compareTo(a.createdAt);
+      }); // Default newest, then by creation time
       allTransactions.assignAll(result);
 
       // Extract unique categories
@@ -74,16 +78,32 @@ class TransactionsController extends GetxController {
     // Sort
     switch (selectedSort.value) {
       case 'newest':
-        filtered.sort((a, b) => b.date.compareTo(a.date));
+        filtered.sort((a, b) {
+          int cmp = b.date.compareTo(a.date);
+          if (cmp != 0) return cmp;
+          return b.createdAt.compareTo(a.createdAt);
+        });
         break;
       case 'oldest':
-        filtered.sort((a, b) => a.date.compareTo(b.date));
+        filtered.sort((a, b) {
+          int cmp = a.date.compareTo(b.date);
+          if (cmp != 0) return cmp;
+          return a.createdAt.compareTo(b.createdAt);
+        });
         break;
       case 'highest':
-        filtered.sort((a, b) => b.amount.compareTo(a.amount));
+        filtered.sort((a, b) {
+          int cmp = b.amount.compareTo(a.amount);
+          if (cmp != 0) return cmp;
+          return b.createdAt.compareTo(a.createdAt);
+        });
         break;
       case 'lowest':
-        filtered.sort((a, b) => a.amount.compareTo(b.amount));
+        filtered.sort((a, b) {
+          int cmp = a.amount.compareTo(b.amount);
+          if (cmp != 0) return cmp;
+          return b.createdAt.compareTo(a.createdAt);
+        });
         break;
     }
 

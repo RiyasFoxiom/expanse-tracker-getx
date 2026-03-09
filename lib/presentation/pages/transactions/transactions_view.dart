@@ -395,7 +395,7 @@ class TransactionsView extends GetView<TransactionsController> {
                 ),
                 2.hBox,
                 AppText(
-                  DateFormat('hh:mm a').format(tx.date),
+                  DateFormat('hh:mm a').format(tx.createdAt),
                   style: const TextStyle(
                     fontSize: 10,
                     fontWeight: .w700,
