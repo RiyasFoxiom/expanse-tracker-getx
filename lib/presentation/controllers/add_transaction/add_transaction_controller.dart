@@ -8,6 +8,7 @@ import 'package:test_app/data/repositories/category_repository.dart';
 import 'package:test_app/data/repositories/transaction_repository.dart';
 import 'package:test_app/presentation/controllers/banks/banks_controller.dart';
 import 'package:test_app/presentation/controllers/home/home_controller.dart';
+import 'package:test_app/presentation/widgets/app_dialogs.dart';
 
 class AddTransactionController extends GetxController {
   late TransactionRepository _transactionRepository;
@@ -25,6 +26,7 @@ class AddTransactionController extends GetxController {
   final Rx<BankModel?> selectedBank = Rx<BankModel?>(null);
   final RxList<BankModel> banks = <BankModel>[].obs;
   final RxBool isLoading = false.obs;
+  final RxBool isPayback = false.obs;
 
   @override
   void onInit() async {
@@ -44,7 +46,10 @@ class AddTransactionController extends GetxController {
       final allCategories = await _categoryRepository.getAllCategories();
       categories.value = allCategories;
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load categories: $e');
+      AppDialogs.showSnackbar(
+        message: 'Failed to load categories: $e',
+        isError: true,
+      );
     } finally {
       isLoading.value = false;
     }
@@ -60,7 +65,10 @@ class AddTransactionController extends GetxController {
         selectedBank.value = banks.first;
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load banks: $e');
+      AppDialogs.showSnackbar(
+        message: 'Failed to load banks: $e',
+        isError: true,
+      );
     } finally {
       isLoading.value = false;
     }
@@ -88,22 +96,22 @@ class AddTransactionController extends GetxController {
   // Save transaction
   Future<void> saveTransaction() async {
     if (amountController.text.isEmpty) {
-      Get.snackbar('Error', 'Please enter amount');
+      AppDialogs.showSnackbar(message: 'Please enter amount', isError: true);
       return;
     }
 
     if (selectedDate.value == null) {
-      Get.snackbar('Error', 'Please select date');
+      AppDialogs.showSnackbar(message: 'Please select date', isError: true);
       return;
     }
 
     if (selectedCategory.value == null) {
-      Get.snackbar('Error', 'Please select category');
+      AppDialogs.showSnackbar(message: 'Please select category', isError: true);
       return;
     }
 
     if (selectedBank.value == null) {
-      Get.snackbar('Error', 'Please select bank');
+      AppDialogs.showSnackbar(message: 'Please select bank', isError: true);
       return;
     }
 
@@ -120,6 +128,8 @@ class AddTransactionController extends GetxController {
         bankId: selectedBank.value!.id,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
+        isPayback: isPayback.value,
+        isCompleted: false,
       );
 
       await _transactionRepository.addTransaction(transaction);
@@ -136,12 +146,16 @@ class AddTransactionController extends GetxController {
         newBalance,
       );
 
-      Get.snackbar('Success', 'Transaction saved successfully');
+      AppDialogs.showSnackbar(
+        message: 'Transaction saved successfully',
+        isSuccess: true,
+      );
 
       // Clear only amount and category as requested
       amountController.clear();
       notesController.clear();
       selectedCategory.value = null;
+      isPayback.value = false;
       // selectedDate and selectedBank are kept to allow fast multiple entries
 
       if (Get.isRegistered<HomeController>()) {
@@ -155,7 +169,10 @@ class AddTransactionController extends GetxController {
       update();
     } catch (e) {
       debugPrint('Error saving transaction: $e');
-      Get.snackbar('Error', 'Failed to save transaction: $e');
+      AppDialogs.showSnackbar(
+        message: 'Failed to save transaction: $e',
+        isError: true,
+      );
     } finally {
       isLoading.value = false;
     }

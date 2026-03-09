@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:test_app/data/models/bank_model.dart';
 import 'package:test_app/data/repositories/bank_repository.dart';
 import 'package:test_app/presentation/controllers/banks/banks_controller.dart';
+import 'package:test_app/presentation/widgets/app_dialogs.dart';
 
 class AddBanksController extends GetxController {
   final BankRepository _bankRepo = Get.find<BankRepository>();
@@ -23,7 +24,10 @@ class AddBanksController extends GetxController {
     final balanceStr = balanceController.text.trim();
 
     if (name.isEmpty) {
-      Get.snackbar('Error', 'Account name is required');
+      AppDialogs.showSnackbar(
+        message: 'Account name is required',
+        isError: true,
+      );
       return;
     }
 
@@ -49,11 +53,17 @@ class AddBanksController extends GetxController {
       if (isEditing.value) {
         await _bankRepo.updateBank(bank);
         Get.back();
-        Get.snackbar('Success', '$name updated successfully!');
+        AppDialogs.showSnackbar(
+          message: '$name updated successfully!',
+          isSuccess: true,
+        );
       } else {
         await _bankRepo.addBank(bank);
         Get.back();
-        Get.snackbar('Success', '$name added successfully!');
+        AppDialogs.showSnackbar(
+          message: '$name added successfully!',
+          isSuccess: true,
+        );
       }
 
       if (Get.isRegistered<BanksController>()) {
@@ -61,9 +71,11 @@ class AddBanksController extends GetxController {
       }
     } catch (e) {
       debugPrint("error $e");
-      Get.snackbar(
-        'Error',
-        isEditing.value ? 'Failed to update bank' : 'Failed to save bank',
+      AppDialogs.showSnackbar(
+        message: isEditing.value
+            ? 'Failed to update bank'
+            : 'Failed to save bank',
+        isError: true,
       );
     } finally {
       isSaving.value = false;

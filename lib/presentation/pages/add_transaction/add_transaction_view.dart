@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:test_app/core/extensions/space_ext.dart';
 import 'package:test_app/core/helpers/screen_helper.dart';
 import 'package:test_app/presentation/controllers/add_transaction/add_transaction_controller.dart';
+import 'package:test_app/presentation/widgets/app_dialogs.dart';
 import 'package:test_app/presentation/widgets/app_text.dart';
 
 // ── Neo Brutalism tokens ─────────────────────────────────────────────────────
@@ -187,6 +188,21 @@ class AddTransactionView extends GetView<AddTransactionController> {
                       isDark: isDark,
                       showDivider: true,
                     ),
+                    // Payback Toggle (Only for Expense)
+                    Obx(() {
+                      final isExpense =
+                          controller.selectedCategory.value?.type == 'expense';
+                      if (!isExpense) return const SizedBox.shrink();
+                      return _nbToggleRow(
+                        icon: CupertinoIcons.arrow_2_squarepath,
+                        iconColor: _kAccentPurple,
+                        title: "MARK FOR PAYBACK",
+                        value: controller.isPayback.value,
+                        onChanged: (val) => controller.isPayback.value = val,
+                        isDark: isDark,
+                        showDivider: true,
+                      );
+                    }),
                     // Notes Input
                     Padding(
                       padding: const .all(16),
@@ -329,6 +345,56 @@ class AddTransactionView extends GetView<AddTransactionController> {
     );
   }
 
+  Widget _nbToggleRow({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+    required bool isDark,
+    required bool showDivider,
+  }) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: iconColor,
+                  border: Border.all(color: Colors.black, width: 2),
+                ),
+                child: Icon(icon, size: 18, color: Colors.black),
+              ),
+              16.wBox,
+              AppText(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 13,
+                  letterSpacing: 1,
+                ),
+              ),
+              const Spacer(),
+              Transform.scale(
+                scale: 0.8,
+                child: CupertinoSwitch(
+                  value: value,
+                  onChanged: onChanged,
+                  activeColor: _kAccentGreen,
+                  trackColor: Colors.black12,
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (showDivider) Container(height: 2, color: Colors.black),
+      ],
+    );
+  }
+
   Widget _nbListRow({
     required IconData icon,
     required Color iconColor,
@@ -391,7 +457,11 @@ class AddTransactionView extends GetView<AddTransactionController> {
 
   void _showCategoryPicker(BuildContext context, bool isDark) {
     if (controller.categories.isEmpty) {
-      Get.snackbar("No Categories", "Please add categories first.");
+      AppDialogs.showSnackbar(
+        message: "Please add categories first.",
+        title: "No Categories",
+        isError: true,
+      );
       return;
     }
     _showNBModalPicker(
@@ -420,7 +490,11 @@ class AddTransactionView extends GetView<AddTransactionController> {
 
   void _showBankPicker(BuildContext context, bool isDark) {
     if (controller.banks.isEmpty) {
-      Get.snackbar("No Banks", "Please add a bank account first.");
+      AppDialogs.showSnackbar(
+        message: "Please add a bank account first.",
+        title: "No Banks",
+        isError: true,
+      );
       return;
     }
     _showNBModalPicker(

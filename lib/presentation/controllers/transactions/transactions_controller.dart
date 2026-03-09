@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:test_app/data/models/transaction_model.dart';
 import 'package:test_app/data/repositories/transaction_repository.dart';
+import 'package:test_app/presentation/controllers/banks/banks_controller.dart';
+import 'package:test_app/presentation/widgets/app_dialogs.dart';
 
 class TransactionsController extends GetxController {
   final TransactionRepository _repository = Get.find<TransactionRepository>();
@@ -54,7 +56,10 @@ class TransactionsController extends GetxController {
       applyFiltersAndSort();
     } catch (e) {
       debugPrint('Error: $e');
-      Get.snackbar('Error', 'Failed to load transactions');
+      AppDialogs.showSnackbar(
+        message: 'Failed to load transactions',
+        isError: true,
+      );
     } finally {
       isLoading.value = false;
     }
@@ -172,17 +177,63 @@ class TransactionsController extends GetxController {
     try {
       await _repository.deleteTransaction(id);
       await fetchTransactions(); // Refresh the list
-      Get.snackbar(
-        "Success",
-        "Transaction deleted successfully",
-        snackPosition: SnackPosition.BOTTOM,
+      AppDialogs.showSnackbar(
+        message: "Transaction deleted successfully",
+        isSuccess: true,
       );
     } catch (e) {
-      Get.snackbar(
-        "Error",
-        "Failed to delete transaction",
-        snackPosition: SnackPosition.BOTTOM,
+      AppDialogs.showSnackbar(
+        message: "Failed to delete transaction",
+        isError: true,
       );
+    }
+  }
+
+  Future<void> completePayback(TransactionModel tx) async {
+    try {
+      isLoading.value = true;
+
+      // Update original transaction as completed
+      tx.isCompleted = true;
+      await _repository.updateTransaction(tx);
+
+      // Create a NEW INCOME transaction for the payback
+      final paybackIncome = TransactionModel(
+        amount: tx.amount,
+        type: 'income',
+        category: "PAYBACK",
+        date: DateTime.now(),
+        notes: "RETURN FOR: ${tx.category.toUpperCase()} | ${tx.notes ?? ''}",
+        bankId: tx.bankId,
+        isPayback: false,
+        isCompleted: true,
+      );
+
+      await _repository.addTransaction(paybackIncome);
+
+      // Update bank balance (Income adds money)
+      if (tx.bankId != null) {
+        final banksCtrl = Get.find<BanksController>();
+        final bank = banksCtrl.banks.firstWhereOrNull((b) => b.id == tx.bankId);
+        if (bank != null) {
+          bank.balance += tx.amount;
+          await banksCtrl.updateBank(bank);
+        }
+      }
+
+      await fetchTransactions(); // Refresh the list
+      AppDialogs.showSnackbar(
+        message: "Payback completed and Income added!",
+        isSuccess: true,
+      );
+    } catch (e) {
+      debugPrint("Payback error: $e");
+      AppDialogs.showSnackbar(
+        message: "Failed to complete payback",
+        isError: true,
+      );
+    } finally {
+      isLoading.value = false;
     }
   }
 }

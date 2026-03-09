@@ -8,6 +8,8 @@ class TransactionModel {
   int? bankId; // Foreign key to banks
   late DateTime createdAt;
   DateTime? updatedAt;
+  bool isPayback;
+  bool isCompleted;
 
   TransactionModel({
     this.id,
@@ -19,6 +21,8 @@ class TransactionModel {
     this.bankId,
     DateTime? createdAt,
     this.updatedAt,
+    this.isPayback = false,
+    this.isCompleted = false,
   }) : createdAt = createdAt ?? DateTime.now();
 
   // Convert model to Map for database storage
@@ -33,6 +37,8 @@ class TransactionModel {
       'bank_id': bankId,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
+      'is_payback': isPayback ? 1 : 0,
+      'is_completed': isCompleted ? 1 : 0,
     };
   }
 
@@ -50,6 +56,8 @@ class TransactionModel {
       updatedAt: map['updated_at'] != null
           ? DateTime.parse(map['updated_at'])
           : null,
+      isPayback: (map['is_payback'] ?? 0) == 1,
+      isCompleted: (map['is_completed'] ?? 0) == 1,
     );
   }
 }

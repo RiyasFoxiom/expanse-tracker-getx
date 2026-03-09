@@ -22,7 +22,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 5,
+      version: 6,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -91,6 +91,15 @@ class DatabaseHelper {
     if (oldVersion < 5) {
       await db.execute(
         'ALTER TABLE banks ADD COLUMN card_number TEXT NOT NULL DEFAULT ""',
+      );
+    }
+
+    if (oldVersion < 6) {
+      await db.execute(
+        'ALTER TABLE transactions ADD COLUMN is_payback INTEGER DEFAULT 0',
+      );
+      await db.execute(
+        'ALTER TABLE transactions ADD COLUMN is_completed INTEGER DEFAULT 0',
       );
     }
   }

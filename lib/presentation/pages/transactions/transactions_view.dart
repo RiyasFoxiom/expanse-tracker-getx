@@ -8,6 +8,7 @@ import 'package:test_app/presentation/bindings/add_transaction/add_transaction_b
 import 'package:test_app/presentation/controllers/transactions/transactions_controller.dart';
 import 'package:test_app/presentation/pages/add_transaction/add_transaction_view.dart';
 import 'package:intl/intl.dart';
+import 'package:test_app/presentation/widgets/app_dialogs.dart';
 import 'package:test_app/presentation/widgets/app_text.dart';
 
 // ── Neo Brutalism tokens ─────────────────────────────────────────────────────
@@ -314,7 +315,11 @@ class TransactionsView extends GetView<TransactionsController> {
     return Dismissible(
       key: ValueKey("tx_${tx.id}"),
       direction: .endToStart,
-      confirmDismiss: (direction) async => await _showDeleteDialog(context),
+      confirmDismiss: (direction) async => await AppDialogs.showConfirmDialog(
+        title: "DELETE TRANSACTION?",
+        content: "ARE YOU SURE YOU WANT TO DELETE THIS ITEM?",
+        isDestructive: true,
+      ),
       onDismissed: (_) {
         if (tx.id != null) controller.deleteTransaction(tx.id!);
       },
@@ -371,7 +376,7 @@ class TransactionsView extends GetView<TransactionsController> {
                     AppText(
                       tx.notes!,
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 11,
                         fontWeight: .w600,
                         color: isDark ? Colors.white54 : Colors.black45,
                       ),
@@ -379,9 +384,35 @@ class TransactionsView extends GetView<TransactionsController> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
+                  // Payback Status Badge
+                  if (tx.isPayback) ...[
+                    6.hBox,
+                    Container(
+                      padding: const .symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: tx.isCompleted
+                            ? _kAccentGreen.withValues(alpha: 0.2)
+                            : _kAccentRed.withValues(alpha: 0.2),
+                        border: .all(
+                          color: tx.isCompleted ? _kAccentGreen : _kAccentRed,
+                        ),
+                      ),
+                      child: AppText(
+                        tx.isCompleted
+                            ? "PAYBACK COMPLETED"
+                            : "PENDING PAYBACK",
+                        style: TextStyle(
+                          fontSize: 8,
+                          fontWeight: .w900,
+                          color: tx.isCompleted ? _kAccentGreen : _kAccentRed,
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
+            12.wBox,
             Column(
               crossAxisAlignment: .end,
               children: [
@@ -402,31 +433,44 @@ class TransactionsView extends GetView<TransactionsController> {
                     color: Colors.grey,
                   ),
                 ),
+                // Payback Action Button
+                if (tx.isPayback && !tx.isCompleted) ...[
+                  8.hBox,
+                  GestureDetector(
+                    onTap: () async {
+                      final confirmed = await AppDialogs.showConfirmDialog(
+                        title: "RECEIVE PAYBACK?",
+                        content:
+                            "ARE YOU SURE YOU HAVE RECEIVED ₹${tx.amount.toStringAsFixed(2)} BACK? THIS WILL ADD AN INCOME RECORD.",
+                      );
+                      if (confirmed == true) {
+                        controller.completePayback(tx);
+                      }
+                    },
+                    child: Container(
+                      padding: const .symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        border: .all(color: _kAccentGreen, width: 1.5),
+                        boxShadow: const [
+                          BoxShadow(color: _kAccentGreen, offset: Offset(2, 2)),
+                        ],
+                      ),
+                      child: const AppText(
+                        "RECEIVE",
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: .w900,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Future<bool?> _showDeleteDialog(BuildContext context) async {
-    return await showCupertinoDialog<bool>(
-      context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: const AppText("DELETE TRANSACTION?"),
-        content: const AppText("ARE YOU SURE YOU WANT TO DELETE THIS ITEM?"),
-        actions: [
-          CupertinoDialogAction(
-            onPressed: () => Screen.close(result: false),
-            child: const AppText("CANCEL"),
-          ),
-          CupertinoDialogAction(
-            isDestructiveAction: true,
-            onPressed: () => Screen.close(result: true),
-            child: const AppText("DELETE"),
-          ),
-        ],
       ),
     );
   }

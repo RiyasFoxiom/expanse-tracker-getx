@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:test_app/presentation/widgets/app_dialogs.dart';
 import 'package:test_app/data/models/bank_model.dart';
 import 'package:test_app/data/models/transaction_model.dart';
 import 'package:test_app/data/repositories/transaction_repository.dart';
@@ -30,7 +31,10 @@ class BankTransactionController extends GetxController {
       result.sort((a, b) => b.date.compareTo(a.date));
       transactions.assignAll(result);
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load transactions');
+      AppDialogs.showSnackbar(
+        message: 'Failed to load transactions',
+        isError: true,
+      );
       debugPrint('Error: $e');
     } finally {
       isLoading.value = false;

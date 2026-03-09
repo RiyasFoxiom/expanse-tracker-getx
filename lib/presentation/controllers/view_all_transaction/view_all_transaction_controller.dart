@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:test_app/presentation/widgets/app_dialogs.dart';
 import 'package:intl/intl.dart';
 import 'package:test_app/data/models/transaction_model.dart';
 import 'package:test_app/data/repositories/transaction_repository.dart';
@@ -50,7 +51,10 @@ class ViewAllTransactionController extends GetxController {
       applyFiltersAndSort();
     } catch (e) {
       debugPrint('Error: $e');
-      Get.snackbar('Error', 'Failed to load transactions');
+      AppDialogs.showSnackbar(
+        message: 'Failed to load transactions',
+        isError: true,
+      );
     } finally {
       isLoading.value = false;
     }
@@ -153,16 +157,14 @@ class ViewAllTransactionController extends GetxController {
     try {
       await _repository.deleteTransaction(id);
       await fetchTransactions(); // Refresh the list
-      Get.snackbar(
-        "Success",
-        "Transaction deleted successfully",
-        snackPosition: SnackPosition.BOTTOM,
+      AppDialogs.showSnackbar(
+        message: "Transaction deleted successfully",
+        isSuccess: true,
       );
     } catch (e) {
-      Get.snackbar(
-        "Error",
-        "Failed to delete transaction",
-        snackPosition: SnackPosition.BOTTOM,
+      AppDialogs.showSnackbar(
+        message: "Failed to delete transaction",
+        isError: true,
       );
     }
   }

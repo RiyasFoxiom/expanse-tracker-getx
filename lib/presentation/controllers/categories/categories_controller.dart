@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:test_app/data/models/category_model.dart';
 import 'package:test_app/data/repositories/category_repository.dart';
+import 'package:test_app/presentation/widgets/app_dialogs.dart';
 
 class CategoriesController extends GetxController {
   late CategoryRepository _categoryRepository;
@@ -34,9 +35,15 @@ class CategoriesController extends GetxController {
     try {
       await _categoryRepository.deleteCategory(id);
       await loadCategories(); // Refresh the list
-      Get.snackbar('Success', 'Category deleted successfully');
+      AppDialogs.showSnackbar(
+        message: 'Category deleted successfully',
+        isSuccess: true,
+      );
     } catch (e) {
-      Get.snackbar('Error', 'Failed to delete category: $e');
+      AppDialogs.showSnackbar(
+        message: 'Failed to delete category: $e',
+        isError: true,
+      );
       debugPrint('Error deleting category: $e');
     }
   }

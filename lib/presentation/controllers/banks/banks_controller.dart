@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:test_app/data/models/bank_model.dart';
 import 'package:test_app/data/repositories/bank_repository.dart';
+import 'package:test_app/presentation/widgets/app_dialogs.dart';
 
 class BanksController extends GetxController {
   final BankRepository repo = Get.find();
@@ -24,7 +25,7 @@ class BanksController extends GetxController {
       await repo.addOrUpdateBank(bank);
       await loadBanks();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to update bank');
+      AppDialogs.showSnackbar(message: 'Failed to update bank', isError: true);
     }
   }
 
@@ -32,9 +33,12 @@ class BanksController extends GetxController {
     try {
       await repo.deleteBank(id);
       await loadBanks();
-      Get.snackbar('Success', 'Bank deleted');
+      AppDialogs.showSnackbar(message: 'Bank deleted', isSuccess: true);
     } catch (e) {
-      Get.snackbar('Error', 'Cannot delete bank with transactions');
+      AppDialogs.showSnackbar(
+        message: 'Cannot delete bank with transactions',
+        isError: true,
+      );
     }
   }
 
@@ -44,20 +48,32 @@ class BanksController extends GetxController {
     double amount,
   ) async {
     if (fromBankId == toBankId) {
-      Get.snackbar('Error', 'Cannot transfer to the same bank');
+      AppDialogs.showSnackbar(
+        message: 'Cannot transfer to the same bank',
+        isError: true,
+      );
       return;
     }
     if (amount <= 0) {
-      Get.snackbar('Error', 'Amount must be greater than zero');
+      AppDialogs.showSnackbar(
+        message: 'Amount must be greater than zero',
+        isError: true,
+      );
       return;
     }
     try {
       await repo.transferFunds(fromBankId, toBankId, amount);
       await loadBanks();
       Get.back(); // Close the modal
-      Get.snackbar('Success', 'Funds transferred successfully');
+      AppDialogs.showSnackbar(
+        message: 'Funds transferred successfully',
+        isSuccess: true,
+      );
     } catch (e) {
-      Get.snackbar('Error', e.toString().replaceAll('Exception: ', ''));
+      AppDialogs.showSnackbar(
+        message: e.toString().replaceAll('Exception: ', ''),
+        isError: true,
+      );
     }
   }
 }

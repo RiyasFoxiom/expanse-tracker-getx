@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:test_app/presentation/widgets/app_dialogs.dart';
 import 'package:intl/intl.dart';
 import 'package:test_app/data/models/transaction_model.dart';
 import 'package:test_app/data/repositories/transaction_repository.dart';
@@ -189,16 +190,14 @@ class HomeController extends GetxController {
     try {
       await _transactionRepository.deleteTransaction(id);
       await getAllTransactions();
-      Get.snackbar(
-        "Success",
-        "Transaction deleted successfully",
-        snackPosition: SnackPosition.BOTTOM,
+      AppDialogs.showSnackbar(
+        message: "Transaction deleted successfully",
+        isSuccess: true,
       );
     } catch (e) {
-      Get.snackbar(
-        "Error",
-        "Failed to delete transaction",
-        snackPosition: SnackPosition.BOTTOM,
+      AppDialogs.showSnackbar(
+        message: "Failed to delete transaction",
+        isError: true,
       );
     }
   }

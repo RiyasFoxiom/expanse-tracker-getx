@@ -9,6 +9,7 @@ import 'package:test_app/presentation/controllers/add_category/add_category_cont
 import 'package:test_app/presentation/controllers/categories/categories_controller.dart';
 import 'package:test_app/presentation/pages/add_category/add_category_view.dart';
 import 'package:test_app/presentation/pages/categories_chart/categories_chart_view.dart';
+import 'package:test_app/presentation/widgets/app_dialogs.dart';
 import 'package:test_app/presentation/widgets/app_text.dart';
 
 // ── Neo Brutalism tokens ─────────────────────────────────────────────────────
@@ -315,9 +316,18 @@ class CategoriesView extends GetView<CategoriesController> {
       key: ValueKey(category.id),
       direction: .endToStart,
       confirmDismiss: (_) async {
-        return category.id != null
-            ? await _showDeleteDialog(context, category.id!)
-            : false;
+        if (category.id == null) return false;
+        final confirmed = await AppDialogs.showConfirmDialog(
+          title: "DELETE CATEGORY",
+          content:
+              "ARE YOU SURE YOU WANT TO DELETE THIS CATEGORY? THIS ACTION CANNOT BE UNDONE.",
+          isDestructive: true,
+        );
+        if (confirmed == true) {
+          Get.find<AddCategoryController>().deleteCategory(category.id!);
+          return true;
+        }
+        return false;
       },
       background: Container(
         padding: const .only(right: 20),
@@ -401,126 +411,6 @@ class CategoriesView extends GetView<CategoriesController> {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  // ── Delete Dialog ──────────────────────────────────────────────────────────
-  Future<bool?> _showDeleteDialog(BuildContext context, int id) {
-    final isDark = Theme.of(context).brightness == .dark;
-    final bg = isDark ? const Color(0xFF1A1A1A) : Colors.white;
-
-    return showDialog<bool>(
-      context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: const .all(24),
-        child: Container(
-          padding: const .all(24),
-          decoration: BoxDecoration(
-            color: bg,
-            border: .all(color: Colors.black, width: 2.5),
-            boxShadow: const [
-              BoxShadow(color: Colors.black, offset: Offset(6, 6)),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: .min,
-            crossAxisAlignment: .start,
-            children: [
-              Container(
-                padding: const .symmetric(horizontal: 10, vertical: 4),
-                color: _kAccentRed,
-                child: const AppText(
-                  "DELETE CATEGORY",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: .w900,
-                    color: Colors.white,
-                    letterSpacing: 1.5,
-                  ),
-                ),
-              ),
-              24.hBox,
-              AppText(
-                "ARE YOU SURE YOU WANT TO DELETE THIS CATEGORY? THIS ACTION CANNOT BE UNDONE.",
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: .w700,
-                  color: isDark ? Colors.white : Colors.black,
-                  height: 1.5,
-                ),
-              ),
-              32.hBox,
-              Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => Screen.close(result: false),
-                      child: Container(
-                        padding: const .symmetric(vertical: 14),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.grey.shade800
-                              : Colors.grey.shade300,
-                          border: .all(color: Colors.black, width: 2.5),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black,
-                              offset: Offset(3, 3),
-                            ),
-                          ],
-                        ),
-                        alignment: Alignment.center,
-                        child: AppText(
-                          "CANCEL",
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: .w900,
-                            color: isDark ? Colors.white : Colors.black,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  16.wBox,
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        Get.find<AddCategoryController>().deleteCategory(id);
-                        Screen.close(result: true);
-                      },
-                      child: Container(
-                        padding: const .symmetric(vertical: 14),
-                        decoration: BoxDecoration(
-                          color: _kAccentRed,
-                          border: .all(color: Colors.black, width: 2.5),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black,
-                              offset: Offset(3, 3),
-                            ),
-                          ],
-                        ),
-                        alignment: .center,
-                        child: const AppText(
-                          "DELETE",
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: .w900,
-                            color: Colors.white,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
         ),
       ),
     );

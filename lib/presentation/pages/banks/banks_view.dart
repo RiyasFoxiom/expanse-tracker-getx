@@ -13,6 +13,7 @@ import 'package:test_app/presentation/controllers/banks/banks_controller.dart';
 import 'package:test_app/presentation/pages/add_banks/add_banks_view.dart';
 import 'package:test_app/presentation/pages/bank_transaction/bank_transaction_view.dart';
 import 'package:test_app/presentation/pages/banks/widget/card_widget.dart';
+import 'package:test_app/presentation/widgets/app_dialogs.dart';
 import 'package:test_app/presentation/widgets/app_text.dart';
 
 // ── Neo Brutalism tokens ─────────────────────────────────────────────────────
@@ -52,9 +53,10 @@ class BanksView extends GetView<BanksController> {
   // ─── Transfer Bottom Sheet ──────────────────────────────────────────
   void _showTransferSheet(BuildContext context) {
     if (controller.banks.length < 2) {
-      _showErrorSnackbar(
-        'Not Enough Banks',
-        'You need at least 2 banks to make a transfer',
+      AppDialogs.showSnackbar(
+        message: 'You need at least 2 banks to make a transfer',
+        title: 'Not Enough Banks',
+        isError: true,
       );
       return;
     }
@@ -195,17 +197,20 @@ class BanksView extends GetView<BanksController> {
                       textColor: Colors.white,
                       onTap: () {
                         if (fromBank.value == null || toBank.value == null) {
-                          _showErrorSnackbar(
-                            'Select Banks',
-                            'Please select both source and destination banks',
+                          AppDialogs.showSnackbar(
+                            message:
+                                'Please select both source and destination banks',
+                            title: 'Select Banks',
+                            isError: true,
                           );
                           return;
                         }
                         final amount = double.tryParse(amountCtrl.text) ?? 0;
                         if (amount <= 0) {
-                          _showErrorSnackbar(
-                            'Invalid Amount',
-                            'Enter a valid transfer amount',
+                          AppDialogs.showSnackbar(
+                            message: 'Enter a valid transfer amount',
+                            title: 'Invalid Amount',
+                            isError: true,
                           );
                           return;
                         }
@@ -226,20 +231,6 @@ class BanksView extends GetView<BanksController> {
         ),
       ),
       isScrollControlled: true,
-    );
-  }
-
-  void _showErrorSnackbar(String title, String message) {
-    Get.snackbar(
-      title,
-      message,
-      snackPosition: .TOP,
-      backgroundColor: _kAccentRed,
-      colorText: Colors.white,
-      margin: const EdgeInsets.all(16),
-      borderRadius: 0,
-      borderWidth: 2.5,
-      borderColor: Colors.black,
     );
   }
 
@@ -310,79 +301,17 @@ class BanksView extends GetView<BanksController> {
   // ─── Delete confirmation ────────────────────────────────────────────
   Future<void> _confirmDelete(BuildContext context, BankModel bank) async {
     final hasTx = await controller.repo.hasTransactions(bank.id!);
-    final isDark = Theme.of(context).brightness == .dark;
-    final bg = isDark ? const Color(0xFF1A1A1A) : Colors.white;
-
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: Colors.transparent,
-        child: Container(
-          padding: const .all(24),
-          decoration: BoxDecoration(
-            color: bg,
-            border: .all(color: Colors.black, width: 2.5),
-            boxShadow: const [
-              BoxShadow(color: Colors.black, offset: Offset(6, 6)),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: .min,
-            crossAxisAlignment: .start,
-            children: [
-              Container(
-                padding: const .symmetric(horizontal: 10, vertical: 4),
-                color: _kAccentRed,
-                child: const AppText(
-                  "DELETE BANK?",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: .w900,
-                    color: Colors.white,
-                    letterSpacing: 1.5,
-                  ),
-                ),
-              ),
-              24.hBox,
-              AppText(
-                hasTx
-                    ? "THIS BANK HAS TRANSACTIONS. DELETE ANYWAY? THIS CANNOT BE UNDONE."
-                    : "THIS BANK WILL BE PERMANENTLY DELETED.",
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: .w700,
-                  color: isDark ? Colors.white : Colors.black,
-                  height: 1.5,
-                ),
-              ),
-              32.hBox,
-              Row(
-                children: [
-                  Expanded(
-                    child: _nbButton(
-                      label: "CANCEL",
-                      color: isDark ? Colors.white10 : Colors.black12,
-                      textColor: isDark ? Colors.white : Colors.black,
-                      onTap: () => Screen.close(result: false),
-                    ),
-                  ),
-                  16.wBox,
-                  Expanded(
-                    child: _nbButton(
-                      label: "DELETE",
-                      color: _kAccentRed,
-                      textColor: Colors.white,
-                      onTap: () => Screen.close(result: true),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
+    final confirmed = await AppDialogs.showConfirmDialog(
+      title: "DELETE BANK?",
+      content: hasTx
+          ? "THIS BANK HAS TRANSACTIONS. DELETE ANYWAY? THIS CANNOT BE UNDONE."
+          : "THIS BANK WILL BE PERMANENTLY DELETED.",
+      isDestructive: true,
     );
-    if (confirm == true) await controller.deleteBank(bank.id!);
+
+    if (confirmed == true) {
+      await controller.deleteBank(bank.id!);
+    }
   }
 
   @override

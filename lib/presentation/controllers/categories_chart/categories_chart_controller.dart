@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:test_app/presentation/widgets/app_dialogs.dart';
 import 'package:test_app/data/models/category_model.dart';
 import 'package:test_app/data/repositories/category_repository.dart';
 import 'package:test_app/data/repositories/transaction_repository.dart';
@@ -73,7 +74,7 @@ class CategoriesChartController extends GetxController {
       }
     } catch (e) {
       debugPrint('Error loading chart data: $e');
-      Get.snackbar('Error', 'Failed to load chart');
+      AppDialogs.showSnackbar(message: 'Failed to load chart', isError: true);
     } finally {
       isLoading.value = false;
     }

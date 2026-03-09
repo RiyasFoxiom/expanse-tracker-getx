@@ -4,6 +4,7 @@ import 'package:test_app/data/models/category_model.dart';
 import 'package:test_app/data/repositories/category_repository.dart';
 import 'package:test_app/presentation/controllers/categories/categories_controller.dart';
 import 'package:test_app/presentation/pages/add_category/add_category_view.dart';
+import 'package:test_app/presentation/widgets/app_dialogs.dart';
 
 class AddCategoryController extends GetxController {
   late CategoryRepository _categoryRepository;
@@ -34,7 +35,10 @@ class AddCategoryController extends GetxController {
   // Add new category
   Future<void> addCategory() async {
     if (categoryNameController.text.isEmpty) {
-      Get.snackbar('Error', 'Category name cannot be empty');
+      AppDialogs.showSnackbar(
+        message: 'Category name cannot be empty',
+        isError: true,
+      );
       return;
     }
 
@@ -49,10 +53,16 @@ class AddCategoryController extends GetxController {
       categoryNameController.clear();
       _character.value = CategoryType.income;
       await _categoriesController.loadCategories();
-      Get.snackbar('Success', 'Category added successfully');
+      AppDialogs.showSnackbar(
+        message: 'Category added successfully',
+        isSuccess: true,
+      );
       Get.back();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to add category: $e');
+      AppDialogs.showSnackbar(
+        message: 'Failed to add category: $e',
+        isError: true,
+      );
       debugPrint('Error adding category: $e');
     }
   }
@@ -60,7 +70,10 @@ class AddCategoryController extends GetxController {
   // Update category
   Future<void> updateCategory(CategoryModel category) async {
     if (categoryNameController.text.isEmpty) {
-      Get.snackbar('Error', 'Category name cannot be empty');
+      AppDialogs.showSnackbar(
+        message: 'Category name cannot be empty',
+        isError: true,
+      );
       return;
     }
 
@@ -73,10 +86,16 @@ class AddCategoryController extends GetxController {
       editingCategory.value = null;
       await _categoriesController.loadCategories();
 
-      Get.snackbar('Success', 'Category updated successfully');
+      AppDialogs.showSnackbar(
+        message: 'Category updated successfully',
+        isSuccess: true,
+      );
       Get.back();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to update category: $e');
+      AppDialogs.showSnackbar(
+        message: 'Failed to update category: $e',
+        isError: true,
+      );
       debugPrint('Error updating category: $e');
     }
   }
@@ -88,9 +107,15 @@ class AddCategoryController extends GetxController {
       await _categoriesController.loadCategories();
 
       // await loadCategories();
-      Get.snackbar('Success', 'Category deleted successfully');
+      AppDialogs.showSnackbar(
+        message: 'Category deleted successfully',
+        isSuccess: true,
+      );
     } catch (e) {
-      Get.snackbar('Error', 'Failed to delete category: $e');
+      AppDialogs.showSnackbar(
+        message: 'Failed to delete category: $e',
+        isError: true,
+      );
       debugPrint('Error deleting category: $e');
     }
   }
