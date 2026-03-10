@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:test_app/core/extensions/space_ext.dart';
 import 'package:test_app/core/helpers/screen_helper.dart';
@@ -8,6 +9,7 @@ import 'package:test_app/presentation/bindings/add_transaction/add_transaction_b
 import 'package:test_app/presentation/controllers/transactions/transactions_controller.dart';
 import 'package:test_app/presentation/pages/add_transaction/add_transaction_view.dart';
 import 'package:intl/intl.dart';
+import 'package:test_app/presentation/controllers/add_transaction/add_transaction_controller.dart';
 import 'package:test_app/presentation/widgets/app_dialogs.dart';
 import 'package:test_app/presentation/widgets/app_text.dart';
 
@@ -84,6 +86,7 @@ class TransactionsView extends GetView<TransactionsController> {
         padding: const .only(bottom: 80),
         child: GestureDetector(
           onTap: () async {
+            Get.find<AddTransactionController>().resetForAdd();
             await Screen.open(
               const AddTransactionView(),
               binding: AddTransactionBinding(),
@@ -312,25 +315,44 @@ class TransactionsView extends GetView<TransactionsController> {
     final isIncome = tx.type == 'income';
     final accentColor = isIncome ? _kAccentGreen : _kAccentRed;
 
-    return Dismissible(
+    return Slidable(
       key: ValueKey("tx_${tx.id}"),
-      direction: .endToStart,
-      confirmDismiss: (direction) async => await AppDialogs.showConfirmDialog(
-        title: "DELETE TRANSACTION?",
-        content: "ARE YOU SURE YOU WANT TO DELETE THIS ITEM?",
-        isDestructive: true,
-      ),
-      onDismissed: (_) {
-        if (tx.id != null) controller.deleteTransaction(tx.id!);
-      },
-      background: Container(
-        padding: const .only(right: 20),
-        alignment: .centerRight,
-        decoration: BoxDecoration(
-          color: _kAccentRed,
-          border: .all(color: Colors.black, width: 2),
-        ),
-        child: const Icon(CupertinoIcons.trash, color: Colors.white, size: 24),
+      endActionPane: ActionPane(
+        motion: const StretchMotion(),
+        extentRatio: 0.5,
+        children: [
+          SlidableAction(
+            onPressed: (context) async {
+              final addCtrl = Get.find<AddTransactionController>();
+              addCtrl.setupForEdit(tx);
+              await Screen.open(
+                const AddTransactionView(),
+                binding: AddTransactionBinding(),
+              );
+              controller.fetchTransactions();
+            },
+            backgroundColor: _kAccentBlue,
+            foregroundColor: Colors.white,
+            icon: CupertinoIcons.pencil,
+            label: 'EDIT',
+          ),
+          SlidableAction(
+            onPressed: (context) async {
+              final confirmed = await AppDialogs.showConfirmDialog(
+                title: "DELETE TRANSACTION?",
+                content: "ARE YOU SURE YOU WANT TO DELETE THIS ITEM?",
+                isDestructive: true,
+              );
+              if (confirmed == true && tx.id != null) {
+                controller.deleteTransaction(tx.id!);
+              }
+            },
+            backgroundColor: _kAccentRed,
+            foregroundColor: Colors.white,
+            icon: CupertinoIcons.trash,
+            label: 'DELETE',
+          ),
+        ],
       ),
       child: Container(
         padding: const .all(16),

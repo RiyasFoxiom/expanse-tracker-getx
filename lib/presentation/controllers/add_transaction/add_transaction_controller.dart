@@ -28,6 +28,10 @@ class AddTransactionController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxBool isPayback = false.obs;
 
+  // Editing State
+  final RxBool isEditing = false.obs;
+  final Rx<TransactionModel?> editingTransaction = Rx<TransactionModel?>(null);
+
   @override
   void onInit() async {
     super.onInit();
@@ -79,6 +83,50 @@ class AddTransactionController extends GetxController {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 
+  // Setup form for editing
+  void setupForEdit(TransactionModel transaction) {
+    isEditing.value = true;
+    editingTransaction.value = transaction;
+
+    amountController.text = transaction.amount.toString();
+    notesController.text = transaction.notes ?? '';
+    selectedDate.value = transaction.date;
+    isPayback.value = transaction.isPayback;
+
+    // Matching category by name from the loaded list
+    selectedCategory.value = categories.firstWhereOrNull(
+      (c) => c.name == transaction.category,
+    );
+
+    // Matching bank by id
+    selectedBank.value = banks.firstWhereOrNull(
+      (b) => b.id == transaction.bankId,
+    );
+
+    update();
+  }
+
+  // Reset form for adding new transaction
+  void resetForAdd() {
+    isEditing.value = false;
+    editingTransaction.value = null;
+
+    amountController.clear();
+    notesController.clear();
+    selectedDate.value = DateTime.now();
+    selectedCategory.value = null;
+    isPayback.value = false;
+
+    // Auto-select bank if only one exists
+    if (banks.length == 1) {
+      selectedBank.value = banks.first;
+    } else {
+      selectedBank.value = null;
+    }
+
+    update();
+  }
+
   // Pick date from calendar
   Future<void> pickDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -119,45 +167,105 @@ class AddTransactionController extends GetxController {
       isLoading.value = true;
       final double amount = double.parse(amountController.text);
 
-      final transaction = TransactionModel(
-        amount: amount,
-        category: selectedCategory.value!.name,
-        date: selectedDate.value!,
-        notes: notesController.text.isEmpty ? null : notesController.text,
-        type: selectedCategory.value!.type,
-        bankId: selectedBank.value!.id,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-        isPayback: isPayback.value,
-        isCompleted: false,
-      );
+      if (isEditing.value && editingTransaction.value != null) {
+        // --- EDIT MODE ---
+        final oldTx = editingTransaction.value!;
 
-      await _transactionRepository.addTransaction(transaction);
+        // Reverse old transaction balance - ALWAYS FETCH FRESH DATA FROM DB
+        if (oldTx.bankId != null) {
+          final freshOldBank = await _bankRepository.getBankById(oldTx.bankId!);
+          if (freshOldBank != null) {
+            double reversedBalance = freshOldBank.balance;
+            if (oldTx.type == 'income') {
+              reversedBalance -= oldTx.amount;
+            } else {
+              reversedBalance += oldTx.amount;
+            }
+            await _bankRepository.updateBankBalance(freshOldBank.id!, reversedBalance);
+          }
+        }
 
-      // Update bank balance
-      double newBalance = selectedBank.value!.balance;
-      if (transaction.type == 'income') {
-        newBalance += transaction.amount;
+        final updatedTx = oldTx.copyWith(
+          amount: amount,
+          category: selectedCategory.value!.name,
+          date: selectedDate.value!,
+          notes: notesController.text.isEmpty ? null : notesController.text,
+          type: selectedCategory.value!.type,
+          bankId: selectedBank.value!.id,
+          updatedAt: DateTime.now(),
+          isPayback: isPayback.value,
+        );
+
+        await _transactionRepository.updateTransaction(updatedTx);
+
+        // Apply new transaction balance - ALWAYS FETCH FRESH DATA FROM DB
+        final freshCurrentBank = await _bankRepository.getBankById(
+          selectedBank.value!.id!,
+        );
+        if (freshCurrentBank != null) {
+          double newBalance = freshCurrentBank.balance;
+          if (updatedTx.type == 'income') {
+            newBalance += updatedTx.amount;
+          } else {
+            newBalance -= updatedTx.amount;
+          }
+          await _bankRepository.updateBankBalance(freshCurrentBank.id!, newBalance);
+        }
+
+        AppDialogs.showSnackbar(
+          message: 'Transaction updated successfully',
+          isSuccess: true,
+        );
+
+        Get.back(); // Return to previous screen after edit
       } else {
-        newBalance -= transaction.amount;
+        // --- ADD MODE ---
+        final transaction = TransactionModel(
+          amount: amount,
+          category: selectedCategory.value!.name,
+          date: selectedDate.value!,
+          notes: notesController.text.isEmpty ? null : notesController.text,
+          type: selectedCategory.value!.type,
+          bankId: selectedBank.value!.id,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          isPayback: isPayback.value,
+          isCompleted: false,
+        );
+
+        await _transactionRepository.addTransaction(transaction);
+
+        // Update bank balance - ALWAYS FETCH FRESH DATA FROM DB
+        final freshBank = await _bankRepository.getBankById(selectedBank.value!.id!);
+        if (freshBank != null) {
+          double newBalance = freshBank.balance;
+          if (transaction.type == 'income') {
+            newBalance += transaction.amount;
+          } else {
+            newBalance -= transaction.amount;
+          }
+          await _bankRepository.updateBankBalance(freshBank.id!, newBalance);
+        }
+
+        AppDialogs.showSnackbar(
+          message: 'Transaction saved successfully',
+          isSuccess: true,
+        );
+
+        // Clear only amount, category, and notes as requested
+        amountController.clear();
+        notesController.clear();
+        selectedCategory.value = null;
+        isPayback.value = false;
+        // Refetch banks to update both selectedBank and the banks list locally
+        await loadBanks();
+        // and re-set selected bank after refresh
+        if (selectedBank.value != null) {
+           selectedBank.value = banks.firstWhereOrNull((b) => b.id == selectedBank.value!.id);
+        }
       }
-      await _bankRepository.updateBankBalance(
-        selectedBank.value!.id!,
-        newBalance,
-      );
 
-      AppDialogs.showSnackbar(
-        message: 'Transaction saved successfully',
-        isSuccess: true,
-      );
-
-      // Clear only amount and category as requested
-      amountController.clear();
-      notesController.clear();
-      selectedCategory.value = null;
-      isPayback.value = false;
-      // selectedDate and selectedBank are kept to allow fast multiple entries
-
+      // Refresh data
       if (Get.isRegistered<HomeController>()) {
         Get.find<HomeController>().getAllTransactions();
       }

@@ -2,11 +2,15 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 import 'package:test_app/core/extensions/space_ext.dart';
 import 'package:test_app/core/helpers/screen_helper.dart';
 import 'package:test_app/data/models/transaction_model.dart';
+import 'package:test_app/presentation/bindings/add_transaction/add_transaction_binding.dart';
+import 'package:test_app/presentation/controllers/add_transaction/add_transaction_controller.dart';
 import 'package:test_app/presentation/controllers/home/home_controller.dart';
+import 'package:test_app/presentation/pages/add_transaction/add_transaction_view.dart';
 import 'package:test_app/presentation/widgets/app_dialogs.dart';
 import 'package:test_app/presentation/widgets/app_text.dart';
 
@@ -16,6 +20,7 @@ const _kBorder = BorderSide(color: Colors.black, width: 2.5);
 const _kAccentYellow = Color(0xFFFFE600);
 const _kAccentGreen = Color(0xFF00C853);
 const _kAccentRed = Color(0xFFFF1744);
+const _kAccentBlue = Color(0xFF2979FF);
 
 class HomeView extends GetView<HomeController> {
   const HomeView({super.key});
@@ -653,26 +658,44 @@ class HomeView extends GetView<HomeController> {
     final isIncome = tx.type == 'income';
     final accentColor = isIncome ? _kAccentGreen : _kAccentRed;
 
-    return Dismissible(
+    return Slidable(
       key: ValueKey(tx.id),
-      direction: .endToStart,
-      confirmDismiss: (direction) async {
-        return await AppDialogs.showConfirmDialog(
-          title: "DELETE TRANSACTION",
-          content: "ARE YOU SURE YOU WANT TO DELETE THIS TRANSACTION?",
-          isDestructive: true,
-        );
-      },
-      onDismissed: (direction) {
-        if (tx.id != null) {
-          controller.deleteTransaction(tx.id!);
-        }
-      },
-      background: Container(
-        padding: const EdgeInsets.only(right: 16),
-        alignment: Alignment.centerRight,
-        color: _kAccentRed,
-        child: const Icon(CupertinoIcons.trash, color: Colors.white, size: 22),
+      endActionPane: ActionPane(
+        motion: const StretchMotion(),
+        extentRatio: 0.5,
+        children: [
+          SlidableAction(
+            onPressed: (context) async {
+              final addCtrl = Get.find<AddTransactionController>();
+              addCtrl.setupForEdit(tx);
+              await Screen.open(
+                const AddTransactionView(),
+                binding: AddTransactionBinding(),
+              );
+              controller.getAllTransactions();
+            },
+            backgroundColor: _kAccentBlue,
+            foregroundColor: Colors.white,
+            icon: CupertinoIcons.pencil,
+            label: 'EDIT',
+          ),
+          SlidableAction(
+            onPressed: (context) async {
+              final confirmed = await AppDialogs.showConfirmDialog(
+                title: "DELETE TRANSACTION",
+                content: "ARE YOU SURE YOU WANT TO DELETE THIS TRANSACTION?",
+                isDestructive: true,
+              );
+              if (confirmed == true && tx.id != null) {
+                controller.deleteTransaction(tx.id!);
+              }
+            },
+            backgroundColor: _kAccentRed,
+            foregroundColor: Colors.white,
+            icon: CupertinoIcons.trash,
+            label: 'DELETE',
+          ),
+        ],
       ),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),

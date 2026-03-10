@@ -60,4 +60,32 @@ class TransactionModel {
       isCompleted: (map['is_completed'] ?? 0) == 1,
     );
   }
+
+  TransactionModel copyWith({
+    int? id,
+    double? amount,
+    String? category,
+    String? type,
+    DateTime? date,
+    String? notes,
+    int? bankId,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    bool? isPayback,
+    bool? isCompleted,
+  }) {
+    return TransactionModel(
+      id: id ?? this.id,
+      amount: amount ?? this.amount,
+      category: category ?? this.category,
+      type: type ?? this.type,
+      date: date ?? this.date,
+      notes: notes ?? this.notes,
+      bankId: bankId ?? this.bankId,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      isPayback: isPayback ?? this.isPayback,
+      isCompleted: isCompleted ?? this.isCompleted,
+    );
+  }
 }

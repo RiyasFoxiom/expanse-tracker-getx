@@ -58,14 +58,18 @@ class AddTransactionView extends GetView<AddTransactionController> {
               color: _kAccentYellow,
               border: .all(color: Colors.black, width: 2.5),
             ),
-            child: const AppText(
-              'NEW TRANSACTION',
-              style: TextStyle(
-                fontFamily: 'monospace',
-                fontSize: 16,
-                fontWeight: .w900,
-                color: Colors.black,
-                letterSpacing: 1.5,
+            child: Obx(
+              () => AppText(
+                controller.isEditing.value
+                    ? 'EDIT TRANSACTION'
+                    : 'NEW TRANSACTION',
+                style: const TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.black,
+                  letterSpacing: 1.5,
+                ),
               ),
             ),
           ),
@@ -281,13 +285,17 @@ class AddTransactionView extends GetView<AddTransactionController> {
                         size: 24,
                       ),
                       12.wBox,
-                      const AppText(
-                        "SAVE TRANSACTION",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
-                          letterSpacing: 1.5,
+                      Obx(
+                        () => AppText(
+                          controller.isEditing.value
+                              ? "UPDATE TRANSACTION"
+                              : "SAVE TRANSACTION",
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                            letterSpacing: 1.5,
+                          ),
                         ),
                       ),
                     ],

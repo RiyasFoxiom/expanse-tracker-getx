@@ -17,8 +17,8 @@ import 'package:test_app/presentation/controllers/home/home_controller.dart';
 import 'package:test_app/presentation/controllers/landing/landing_controller.dart';
 import 'package:test_app/presentation/controllers/profile/profile_controller.dart';
 import 'package:test_app/presentation/controllers/splash/splash_controller.dart';
-import 'package:test_app/presentation/controllers/transactions/transactions_controller.dart';
 import 'package:test_app/core/services/local_auth_service.dart';
+import 'package:test_app/presentation/controllers/transactions/transactions_controller.dart';
 
 class InitialBinding implements Bindings {
   @override

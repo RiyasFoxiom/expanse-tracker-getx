@@ -10,6 +10,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init();
 
+  // Clear the database
+  // await DatabaseHelper().clearDatabase();
+
   // Make status bar transparent for edge-to-edge feel
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
