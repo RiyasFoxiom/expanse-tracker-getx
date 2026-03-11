@@ -13,6 +13,7 @@ const _kAccentBlue = Color(0xFF2979FF);
 const _kAccentGreen = Color(0xFF00C853);
 const _kAccentOrange = Color(0xFFFF6D00);
 const _kAccentPurple = Color(0xFF7C4DFF);
+const _kAccentRed = Color(0xFFFF3B30);
 
 class ProfileView extends GetView<ProfileController> {
   const ProfileView({super.key});
@@ -83,32 +84,39 @@ class ProfileView extends GetView<ProfileController> {
                   ),
                 ),
                 18.wBox,
-                Column(
-                  crossAxisAlignment: .start,
-                  children: [
-                    Container(
-                      padding: const .symmetric(horizontal: 8, vertical: 3),
-                      color: Colors.black,
-                      child: const AppText(
-                        'YOUR PROFILE',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: .w900,
-                          letterSpacing: 1.5,
-                          color: Colors.white,
+                Expanded(
+                  child: Obx(() => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
+                        color: Colors.black,
+                        child: AppText(
+                          controller.userDisplayName.isNotEmpty
+                              ? controller.userDisplayName.toUpperCase()
+                              : 'YOUR PROFILE',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.5,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
-                    ),
-                    8.hBox,
-                    AppText(
-                      'budget@tracker.app',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: .w700,
-                        color: isDark ? Colors.white70 : Colors.black54,
+                      8.hBox,
+                      AppText(
+                        controller.userEmail.isNotEmpty
+                            ? controller.userEmail
+                            : 'budget@tracker.app',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? Colors.white70 : Colors.black54,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  )),
                 ),
               ],
             ),
@@ -216,8 +224,123 @@ class ProfileView extends GetView<ProfileController> {
             showBottomBorder: false,
           ),
 
+          32.hBox,
+
+          // ── ACCOUNT section label ──────────────────────────────────────
+          _sectionLabel('ACCOUNT', isDark),
+          10.hBox,
+
+          // Sign Out
+          _buildSettingsRow(
+            isDark: isDark,
+            cardBg: cardBg,
+            accentColor: _kAccentRed,
+            icon: CupertinoIcons.square_arrow_right_fill,
+            title: 'SIGN OUT',
+            onTap: () => _confirmSignOut(context),
+            showBottomBorder: false,
+          ),
+
           100.hBox,
         ],
+      ),
+    );
+  }
+
+  // ── Confirm Sign Out ───────────────────────────────────────────────────────
+  void _confirmSignOut(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? const Color(0xFF1A1A1A) : Colors.white;
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: cardBg,
+            border: const Border.fromBorderSide(
+              BorderSide(color: Colors.black, width: 2.5),
+            ),
+            boxShadow: const [
+              BoxShadow(color: Colors.black, offset: Offset(6, 6), blurRadius: 0),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                color: _kAccentRed,
+                child: const AppText(
+                  'SIGN OUT',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.white),
+                ),
+              ),
+              16.hBox,
+              AppText(
+                'ARE YOU SURE YOU WANT TO SIGN OUT?',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? Colors.white70 : Colors.black87,
+                ),
+              ),
+              20.hBox,
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF333333) : const Color(0xFFEEEEEE),
+                          border: const Border.fromBorderSide(BorderSide(color: Colors.black, width: 2)),
+                        ),
+                        child: Center(
+                          child: AppText(
+                            'CANCEL',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1,
+                              color: isDark ? Colors.white : Colors.black,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  12.wBox,
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context);
+                        controller.signOut();
+                      },
+                      child: Container(
+                        height: 48,
+                        decoration: const BoxDecoration(
+                          color: _kAccentRed,
+                          border: Border.fromBorderSide(BorderSide(color: Colors.black, width: 2)),
+                          boxShadow: [BoxShadow(color: Colors.black, offset: Offset(3, 3), blurRadius: 0)],
+                        ),
+                        child: const Center(
+                          child: AppText(
+                            'SIGN OUT',
+                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 1, color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -2,12 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:test_app/core/services/supabase_auth_service.dart';
+import 'package:test_app/presentation/pages/auth/login_view.dart';
+import 'package:test_app/core/helpers/screen_helper.dart';
 
 class ProfileController extends GetxController {
   final box = GetStorage();
 
   final Rx<ThemeMode> themeMode = ThemeMode.system.obs;
   final RxString appVersion = ''.obs;
+
+  String get userEmail => SupabaseAuthService.to.userEmail;
+  String get userDisplayName => SupabaseAuthService.to.userDisplayName;
+  bool get isLoggedIn => SupabaseAuthService.to.isLoggedIn.value;
 
   @override
   void onInit() {
@@ -44,5 +51,10 @@ class ProfileController extends GetxController {
     }
 
     Get.changeThemeMode(mode);
+  }
+
+  Future<void> signOut() async {
+    await SupabaseAuthService.to.signOut();
+    Screen.openAsNewPage(const LoginView());
   }
 }

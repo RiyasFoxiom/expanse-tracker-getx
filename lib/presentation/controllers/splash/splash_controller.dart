@@ -1,6 +1,8 @@
 import 'package:get/get.dart';
 import 'package:test_app/core/helpers/screen_helper.dart';
+import 'package:test_app/core/services/supabase_auth_service.dart';
 import 'package:test_app/domain/repositories/local_auth_repository.dart';
+import 'package:test_app/presentation/pages/auth/login_view.dart';
 import 'package:test_app/presentation/pages/landing/landing_view.dart';
 
 class SplashController extends GetxController {
@@ -11,48 +13,29 @@ class SplashController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _authenticateUser();
+    _navigateAfterSplash();
   }
 
-  Future<void> _authenticateUser() async {
-    await Future.delayed(const Duration(seconds: 1)); // Splash delay
+  Future<void> _navigateAfterSplash() async {
+    // Show the splash screen for at least 1.5 seconds
+    await Future.delayed(const Duration(milliseconds: 1500));
 
-    // final bool isSupported;
-    // try {
-    //   isSupported = await authRepository.isAuthAvailable(); // Uses isDeviceSupported()
-    // } catch (e) {
-    //   debugPrint('Error checking auth support: $e');
-    //   _goToLanding(); // Fallback to app on any error
-    //   return;
-    // }
+    final authService = SupabaseAuthService.to;
 
-    // // If device does NOT support any local auth (very rare, means no passcode even) → skip to app
-    // if (!isSupported) {
-    //   _goToLanding();
-    //   return;
-    // }
-
-    // // Device supports auth → show prompt (biometrics or fallback to passcode)
-    //  bool isAuthenticated;
-    // try {
-    //   isAuthenticated = await authRepository.authenticate();
-    // } catch (e) {
-    //   debugPrint('Auth exception: $e');
-    //   isAuthenticated = false;
-    // }
-
-    // if (isAuthenticated) {
-    //   _goToLanding();
-    // } else {
-    //   // User canceled, failed, or no credentials configured → close app
-    //   SystemNavigator.pop();
-    // }
-
-    // Currently local auth hidden as requested
-    _goToLanding();
+    if (authService.hasSession) {
+      // User is already logged in – go straight to the app
+      _goToLanding();
+    } else {
+      // No active session – show login
+      _goToLogin();
+    }
   }
 
   void _goToLanding() {
     Screen.openAsNewPage(const LandingView());
+  }
+
+  void _goToLogin() {
+    Screen.openAsNewPage(const LoginView());
   }
 }

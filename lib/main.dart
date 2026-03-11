@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:test_app/core/config/supabase_config.dart';
 import 'package:test_app/core/theme/app_theme.dart';
 import 'package:test_app/presentation/bindings/initial/initial_binding.dart';
 import 'package:test_app/presentation/pages/splash/splash_view.dart';
@@ -10,8 +12,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init();
 
-  // Clear the database
-  // await DatabaseHelper().clearDatabase();
+  // Initialize Supabase (dev database)
+  await Supabase.initialize(
+    url: SupabaseConfig.supabaseUrl,
+    anonKey: SupabaseConfig.supabaseAnonKey,
+    debug: SupabaseConfig.environment == 'DEVELOPMENT',
+  );
 
   // Make status bar transparent for edge-to-edge feel
   SystemChrome.setSystemUIOverlayStyle(
