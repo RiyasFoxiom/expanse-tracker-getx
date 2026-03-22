@@ -6,7 +6,7 @@ class SupabaseConfig {
   SupabaseConfig._();
 
   // ── Toggle this flag for release builds ──────────────────────────────────
-  static const bool isDev = kDebugMode; // ← change to false for production
+  static const bool isDev = false; // ← change to false for production
 
   // ── Environment URLs & Keys ──────────────────────────────────────────────
   static const String _devUrl = 'https://kkgqsxjfuppvqhxiuejw.supabase.co';

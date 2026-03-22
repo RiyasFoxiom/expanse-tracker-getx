@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:test_app/data/models/transaction_model.dart';
+import 'package:test_app/data/repositories/bank_repository.dart';
 import 'package:test_app/data/repositories/transaction_repository.dart';
 import 'package:test_app/presentation/controllers/banks/banks_controller.dart';
+import 'package:test_app/presentation/controllers/home/home_controller.dart';
 import 'package:test_app/presentation/widgets/app_dialogs.dart';
 
 class TransactionsController extends GetxController {
@@ -213,15 +215,23 @@ class TransactionsController extends GetxController {
 
       // Update bank balance (Income adds money)
       if (tx.bankId != null) {
-        final banksCtrl = Get.find<BanksController>();
-        final bank = banksCtrl.banks.firstWhereOrNull((b) => b.id == tx.bankId);
-        if (bank != null) {
-          bank.balance += tx.amount;
-          await banksCtrl.updateBank(bank);
+        final bankRepo = Get.find<BankRepository>();
+        final freshBank = await bankRepo.getBankById(tx.bankId!);
+        if (freshBank != null) {
+          double newBalance = freshBank.balance + tx.amount;
+          await bankRepo.updateBankBalance(freshBank.id!, newBalance);
+
+          if (Get.isRegistered<BanksController>()) {
+            Get.find<BanksController>().loadBanks();
+          }
         }
       }
 
       await fetchTransactions(); // Refresh the list
+
+      if (Get.isRegistered<HomeController>()) {
+        Get.find<HomeController>().getAllTransactions();
+      }
       AppDialogs.showSnackbar(
         message: "Payback completed and Income added!",
         isSuccess: true,
