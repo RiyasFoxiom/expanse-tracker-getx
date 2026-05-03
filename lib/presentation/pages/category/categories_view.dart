@@ -5,10 +5,12 @@ import 'package:test_app/core/extensions/space_ext.dart';
 import 'package:test_app/core/helpers/screen_helper.dart';
 import 'package:test_app/presentation/bindings/add_category/add_category_binding.dart';
 import 'package:test_app/presentation/bindings/categories_chart/categories_chart_binding.dart';
+import 'package:test_app/presentation/bindings/transaction_table/transaction_table_binding.dart';
 import 'package:test_app/presentation/controllers/add_category/add_category_controller.dart';
 import 'package:test_app/presentation/controllers/categories/categories_controller.dart';
 import 'package:test_app/presentation/pages/add_category/add_category_view.dart';
 import 'package:test_app/presentation/pages/categories_chart/categories_chart_view.dart';
+import 'package:test_app/presentation/pages/transaction_table/transaction_table_view.dart';
 import 'package:test_app/presentation/widgets/app_dialogs.dart';
 import 'package:test_app/presentation/widgets/app_text.dart';
 
@@ -63,6 +65,46 @@ class CategoriesView extends GetView<CategoriesController> {
           ),
         ),
         actions: [
+          Padding(
+            padding: const .only(top: 8.0, right: 8.0),
+            child: GestureDetector(
+              onTap: () {
+                Screen.open(
+                  const TransactionTableView(),
+                  binding: TransactionTableBinding(),
+                );
+              },
+              child: Container(
+                padding: const .symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: _kAccentBlue,
+                  border: .all(color: Colors.black, width: 2.5),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black,
+                      offset: Offset(3, 3),
+                      blurRadius: 0,
+                    ),
+                  ],
+                ),
+                child: const Row(
+                  children: [
+                    Icon(CupertinoIcons.table, color: Colors.white, size: 16),
+                    SizedBox(width: 8),
+                    AppText(
+                      'TABLE',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: .w900,
+                        color: Colors.white,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
           Padding(
             padding: const .only(top: 8.0, right: 16.0),
             child: GestureDetector(
@@ -335,82 +377,92 @@ class CategoriesView extends GetView<CategoriesController> {
         color: _kAccentRed,
         child: const Icon(CupertinoIcons.trash, color: Colors.white, size: 24),
       ),
-      child: Container(
-        padding: const .symmetric(horizontal: 14, vertical: 14),
+      child: Material(
         color: cardBg,
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              color: accentColor,
-              child: Icon(
-                isIncome
-                    ? CupertinoIcons.arrow_down_left
-                    : CupertinoIcons.arrow_up_right,
-                color: Colors.white,
-                size: 20,
-              ),
-            ),
-            12.wBox,
-            Expanded(
-              child: Column(
-                crossAxisAlignment: .start,
-                children: [
-                  AppText(
-                    category.name.toString().toUpperCase(),
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: .w900,
-                      letterSpacing: 0.5,
+        child: InkWell(
+          onTap: () {
+            Screen.open(
+              const TransactionTableView(),
+              binding: TransactionTableBinding(categoryName: category.name),
+            );
+          },
+          child: Container(
+            padding: const .symmetric(horizontal: 14, vertical: 14),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  color: accentColor,
+                  child: Icon(
+                    isIncome
+                        ? CupertinoIcons.arrow_down_left
+                        : CupertinoIcons.arrow_up_right,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                12.wBox,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: .start,
+                    children: [
+                      AppText(
+                        category.name.toString().toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: .w900,
+                          letterSpacing: 0.5,
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
+                      ),
+                      4.hBox,
+                      Container(
+                        padding: const .symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: isDark ? Colors.white10 : Colors.black12,
+                          border: .all(
+                            color: isDark ? Colors.white30 : Colors.black26,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: AppText(
+                          isIncome ? 'INCOME' : 'EXPENSE',
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: .w900,
+                            color: accentColor,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    final addCtrl = Get.find<AddCategoryController>();
+                    addCtrl.setEditingCategory(category);
+                    Screen.open(
+                      const AddCategoryView(),
+                      binding: AddCategoryBinding(),
+                    );
+                  },
+                  child: Container(
+                    padding: const .all(8),
+                    decoration: BoxDecoration(
                       color: isDark ? Colors.white : Colors.black,
                     ),
-                  ),
-                  4.hBox,
-                  Container(
-                    padding: const .symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: isDark ? Colors.white10 : Colors.black12,
-                      border: .all(
-                        color: isDark ? Colors.white30 : Colors.black26,
-                        width: 1.5,
-                      ),
-                    ),
-                    child: AppText(
-                      isIncome ? 'INCOME' : 'EXPENSE',
-                      style: TextStyle(
-                        fontSize: 9,
-                        fontWeight: .w900,
-                        color: accentColor,
-                        letterSpacing: 1,
-                      ),
+                    child: Icon(
+                      Icons.edit_rounded,
+                      size: 20,
+                      color: isDark ? Colors.black : Colors.white,
                     ),
                   ),
-                ],
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                final addCtrl = Get.find<AddCategoryController>();
-                addCtrl.setEditingCategory(category);
-                Screen.open(
-                  const AddCategoryView(),
-                  binding: AddCategoryBinding(),
-                );
-              },
-              child: Container(
-                padding: const .all(8),
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.white : Colors.black,
                 ),
-                child: Icon(
-                  Icons.edit_rounded,
-                  size: 20,
-                  color: isDark ? Colors.black : Colors.white,
-                ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

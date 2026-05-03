@@ -139,7 +139,8 @@ class TransactionsView extends GetView<TransactionsController> {
           physics: const BouncingScrollPhysics(),
           padding: const .symmetric(horizontal: 16, vertical: 20),
           children: [
-            // ── All-Time Summary Row ─────────────────────────────────────────
+            _nbLabel('SUMMARY', isDark),
+            12.hBox,
             _buildSummaryRow(
               controller.totalIncome.value,
               controller.totalExpense.value,
@@ -160,13 +161,13 @@ class TransactionsView extends GetView<TransactionsController> {
                     physics: const NeverScrollableScrollPhysics(),
                     padding: .zero,
                     itemCount: txList.length,
-                    separatorBuilder: (_, __) => 16.hBox,
+                    separatorBuilder: (_, index) => 16.hBox,
                     itemBuilder: (ctx, idx) =>
                         _buildTransactionCard(ctx, txList[idx], isDark, cardBg),
                   ),
                 ],
               );
-            }).toList(),
+            }),
             80.hBox, // Padding for floating bottom bar area
           ],
         );
@@ -194,23 +195,52 @@ class TransactionsView extends GetView<TransactionsController> {
   }
 
   Widget _buildSummaryRow(double income, double expense, bool isDark) {
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          child: _summaryBox(
-            "TOTAL INCOME",
-            "₹${income.toStringAsFixed(2)}",
-            _kAccentGreen,
-            isDark,
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: _summaryBox(
+                "TOTAL INCOME",
+                "₹${income.toStringAsFixed(2)}",
+                _kAccentGreen,
+                isDark,
+                icon: CupertinoIcons.arrow_down_left,
+                subtitle: "Money received",
+              ),
+            ),
+            12.wBox,
+            Expanded(
+              child: _summaryBox(
+                "TOTAL EXPENSE",
+                "₹${expense.toStringAsFixed(2)}",
+                _kAccentRed,
+                isDark,
+                icon: CupertinoIcons.arrow_up_right,
+                subtitle: "Money spent",
+              ),
+            ),
+          ],
         ),
-        12.wBox,
-        Expanded(
-          child: _summaryBox(
-            "TOTAL EXPENSE",
-            "₹${expense.toStringAsFixed(2)}",
-            _kAccentRed,
-            isDark,
+        10.hBox,
+        Container(
+          width: double.infinity,
+          padding: const .symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+            border: .all(color: Colors.black, width: 2),
+            boxShadow: const [
+              BoxShadow(color: Colors.black, offset: Offset(3, 3)),
+            ],
+          ),
+          child: AppText(
+            'TOTAL FLOW  ₹${(income + expense).toStringAsFixed(2)}',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: .w900,
+              letterSpacing: 0.8,
+              color: isDark ? Colors.white : Colors.black,
+            ),
           ),
         ),
       ],
@@ -221,8 +251,10 @@ class TransactionsView extends GetView<TransactionsController> {
     String label,
     String value,
     Color accentColor,
-    bool isDark,
-  ) {
+    bool isDark, {
+    required IconData icon,
+    required String subtitle,
+  }) {
     return Container(
       padding: const .all(14),
       decoration: BoxDecoration(
@@ -233,12 +265,23 @@ class TransactionsView extends GetView<TransactionsController> {
       child: Column(
         crossAxisAlignment: .start,
         children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: accentColor,
+              border: .all(color: Colors.black, width: 2),
+            ),
+            child: Icon(icon, color: Colors.white, size: 18),
+          ),
+          10.hBox,
           AppText(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 10,
               fontWeight: .w900,
-              color: Colors.grey,
+              color: isDark ? Colors.white70 : Colors.black54,
+              letterSpacing: 0.8,
             ),
           ),
           4.hBox,
@@ -251,6 +294,16 @@ class TransactionsView extends GetView<TransactionsController> {
                 fontWeight: .w900,
                 color: accentColor,
               ),
+            ),
+          ),
+          4.hBox,
+          AppText(
+            subtitle.toUpperCase(),
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: .w700,
+              color: isDark ? Colors.white54 : Colors.black45,
+              letterSpacing: 0.5,
             ),
           ),
         ],
