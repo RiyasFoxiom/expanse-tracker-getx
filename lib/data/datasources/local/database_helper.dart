@@ -49,7 +49,9 @@ class DatabaseHelper {
       notes TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT,
-      bank_id INTEGER
+      bank_id INTEGER,
+      is_payback INTEGER DEFAULT 0,
+      is_completed INTEGER DEFAULT 0
     )
   ''');
 

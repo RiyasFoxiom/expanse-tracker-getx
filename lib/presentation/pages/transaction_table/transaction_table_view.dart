@@ -120,13 +120,9 @@ class TransactionTableView extends GetView<TransactionTableController> {
           isDark: isDark,
         );
 
-        return RefreshIndicator(
-          onRefresh: controller.loadTransactions,
-          child: ListView(
-            physics: const AlwaysScrollableScrollPhysics(
-              parent: BouncingScrollPhysics(),
-            ),
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          child: Column(
             children: [
               if (controller.isCategoryMode)
                 Row(
@@ -209,6 +205,7 @@ class TransactionTableView extends GetView<TransactionTableController> {
                 ),
               18.hBox,
               Container(
+                width: double.infinity,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
                   vertical: 8,
@@ -237,58 +234,68 @@ class TransactionTableView extends GetView<TransactionTableController> {
                 ),
               ),
               18.hBox,
-              if (controller.transactions.isEmpty)
-                _buildEmptyState(isDark, cardBg)
-              else
-                Container(
-                  decoration: BoxDecoration(
-                    color: cardBg,
-                    border: const Border.fromBorderSide(_kBorder),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Colors.black,
-                        offset: Offset(5, 5),
-                        blurRadius: 0,
+              Expanded(
+                child: controller.transactions.isEmpty
+                    ? _buildEmptyState(isDark, cardBg)
+                    : Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: cardBg,
+                          border: const Border.fromBorderSide(_kBorder),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black,
+                              offset: Offset(5, 5),
+                              blurRadius: 0,
+                            ),
+                          ],
+                        ),
+                        child: Theme(
+                          data: Theme.of(
+                            context,
+                          ).copyWith(dividerColor: Colors.black),
+                          child: SfDataGrid(
+                            source: dataSource,
+                            columnWidthMode: ColumnWidthMode.none,
+                            horizontalScrollPhysics:
+                                const AlwaysScrollableScrollPhysics(),
+                            verticalScrollPhysics:
+                                const AlwaysScrollableScrollPhysics(),
+                            gridLinesVisibility: GridLinesVisibility.both,
+                            headerGridLinesVisibility: GridLinesVisibility.both,
+                            rowHeight: 60,
+                            headerRowHeight: 56,
+                            columns: [
+                              GridColumn(
+                                columnName: 'date',
+                                width: 130,
+                                label: _GridHeaderLabel(label: 'DATE'),
+                              ),
+                              GridColumn(
+                                columnName: 'category',
+                                width: 180,
+                                label: _GridHeaderLabel(label: 'CATEGORY'),
+                              ),
+                              GridColumn(
+                                columnName: 'type',
+                                width: 120,
+                                label: _GridHeaderLabel(label: 'TYPE'),
+                              ),
+                              GridColumn(
+                                columnName: 'amount',
+                                width: 140,
+                                label: _GridHeaderLabel(label: 'AMOUNT'),
+                              ),
+                              GridColumn(
+                                columnName: 'notes',
+                                width: 140,
+                                label: _GridHeaderLabel(label: 'NOTES'),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ],
-                  ),
-                  child: Theme(
-                    data: Theme.of(
-                      context,
-                    ).copyWith(dividerColor: Colors.black),
-                    child: SfDataGrid(
-                      source: dataSource,
-                      shrinkWrapRows: true,
-                      columnWidthMode: ColumnWidthMode.fill,
-                      gridLinesVisibility: GridLinesVisibility.both,
-                      headerGridLinesVisibility: GridLinesVisibility.both,
-                      rowHeight: 60,
-                      headerRowHeight: 56,
-                      columns: [
-                        GridColumn(
-                          columnName: 'date',
-                          label: _GridHeaderLabel(label: 'DATE'),
-                        ),
-                        GridColumn(
-                          columnName: 'category',
-                          label: _GridHeaderLabel(label: 'CATEGORY'),
-                        ),
-                        GridColumn(
-                          columnName: 'type',
-                          label: _GridHeaderLabel(label: 'TYPE'),
-                        ),
-                        GridColumn(
-                          columnName: 'amount',
-                          label: _GridHeaderLabel(label: 'AMOUNT'),
-                        ),
-                        GridColumn(
-                          columnName: 'notes',
-                          label: _GridHeaderLabel(label: 'NOTES'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+              ),
             ],
           ),
         );
@@ -341,6 +348,7 @@ class TransactionTableView extends GetView<TransactionTableController> {
 
   Widget _buildEmptyState(bool isDark, Color cardBg) {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 28),
       decoration: BoxDecoration(
         color: cardBg,
@@ -349,36 +357,39 @@ class TransactionTableView extends GetView<TransactionTableController> {
           BoxShadow(color: Colors.black, offset: Offset(5, 5), blurRadius: 0),
         ],
       ),
-      child: Column(
-        children: [
-          Icon(
-            CupertinoIcons.table,
-            size: 44,
-            color: isDark ? Colors.white54 : Colors.black45,
-          ),
-          14.hBox,
-          AppText(
-            'NO TRANSACTIONS IN THIS MONTH',
-            align: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 1,
-              color: isDark ? Colors.white54 : Colors.black54,
-            ),
-          ),
-          8.hBox,
-          AppText(
-            'SELECT ANOTHER MONTH TO VIEW MORE DATA.',
-            align: TextAlign.center,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.5,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              CupertinoIcons.table,
+              size: 44,
               color: isDark ? Colors.white54 : Colors.black45,
             ),
-          ),
-        ],
+            14.hBox,
+            AppText(
+              'NO TRANSACTIONS IN THIS MONTH',
+              align: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1,
+                color: isDark ? Colors.white54 : Colors.black54,
+              ),
+            ),
+            8.hBox,
+            AppText(
+              'SELECT ANOTHER MONTH TO VIEW MORE DATA.',
+              align: TextAlign.center,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
+                color: isDark ? Colors.white54 : Colors.black45,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
