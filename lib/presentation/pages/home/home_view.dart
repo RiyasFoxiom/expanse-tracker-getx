@@ -410,7 +410,7 @@ class HomeView extends GetView<HomeController> {
                         mainAxisSize: .min,
                         children: [
                           AppText(
-                            controller.centerChartText.split('\n')[0],
+                            'Balance',
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: .w700,
@@ -420,11 +420,7 @@ class HomeView extends GetView<HomeController> {
                           ),
                           4.hBox,
                           AppText(
-                            (double.tryParse(
-                                      controller.centerChartText.split('\n')[1],
-                                    ) ??
-                                    0)
-                                .toStringAsFixed(2),
+                            '₹${controller.totalBalance.value.toStringAsFixed(2)}',
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: .w900,
@@ -458,10 +454,12 @@ class HomeView extends GetView<HomeController> {
     final weeklyData = controller.getLast7DaysData();
     double currentMax = 0;
     for (var day in weeklyData) {
-      if ((day['income'] as double) > currentMax)
+      if ((day['income'] as double) > currentMax) {
         currentMax = day['income'] as double;
-      if ((day['expense'] as double) > currentMax)
+      }
+      if ((day['expense'] as double) > currentMax) {
         currentMax = day['expense'] as double;
+      }
     }
     final maxY = currentMax == 0 ? 100.0 : currentMax * 1.3;
 
